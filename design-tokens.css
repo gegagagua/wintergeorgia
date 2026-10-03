@@ -1,0 +1,108 @@
+/* georgiawinter design tokens — the single source of truth for color, type and spacing.
+   Import once in app/globals.css. Never hardcode a hex value anywhere else.
+   Fonts are self-hosted via next/font (see src/lib/fonts.ts). */
+
+:root {
+  /* --- brand --- */
+  --gw-night:        #0E1620;  /* deepest base, dark-mode background */
+  --gw-glacier:      #14323F;  /* hero, footer, dark surfaces */
+  --gw-snow:         #F2F5F7;  /* light-mode background */
+  --gw-ice:          #2C7FA8;  /* primary: links, primary buttons */
+  --gw-ice-bright:   #3E97C4;  /* hover / focus ring */
+  --gw-dawn:         #D98436;  /* accent: booking CTA, price, featured */
+  --gw-dawn-soft:    #F2A65A;  /* accent on dark surfaces */
+  --gw-fog:          #6B7C89;  /* secondary text, borders */
+
+  /* --- status (never decorative, always paired with a label) --- */
+  --gw-open:         #2F7D53;
+  --gw-limited:      #B8860B;
+  --gw-closed:       #C0392F;
+
+  /* --- semantic, light mode --- */
+  --bg:              var(--gw-snow);
+  --surface:         #FFFFFF;
+  --surface-raised:  #FFFFFF;
+  --ink:             var(--gw-night);
+  --ink-muted:       #5A6A75;
+  --line:            #D6DEE4;
+  --primary:         var(--gw-ice);
+  --primary-hover:   var(--gw-ice-bright);
+  --accent:          var(--gw-dawn);
+
+  /* --- type --- */
+  --font-sans:  "Noto Sans Georgian", system-ui, -apple-system, sans-serif;
+  --font-serif: "Noto Serif Georgian", Georgia, serif;
+
+  --text-display: 60px;  --lh-display: 64px;   /* serif, 600 */
+  --text-h1:      40px;  --lh-h1:      48px;   /* serif, 600 */
+  --text-h2:      28px;  --lh-h2:      36px;   /* serif, 600 */
+  --text-h3:      20px;  --lh-h3:      28px;   /* sans,  650 */
+  --text-body:    17px;  --lh-body:    28px;   /* sans,  400 — 1.65 for Georgian */
+  --text-small:   13px;  --lh-small:   20px;
+
+  /* --- shape and space (8px base) --- */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --radius-sm: 6px;   /* inputs */
+  --radius-md: 10px;  /* images */
+  --radius-lg: 14px;  /* cards, tables */
+  --radius-xl: 20px;  /* modals */
+  --radius-pill: 999px;
+  --container: 1240px;
+  --shadow-interactive: 0 2px 8px rgba(14, 22, 32, .10);
+
+  /* --- motion --- */
+  --ease: cubic-bezier(.2, .7, .3, 1);
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:             #0B1219;
+    --surface:        #111C25;
+    --surface-raised: #16232D;
+    --ink:            #E7EDF1;
+    --ink-muted:      #93A3AE;
+    --line:           #22323D;
+    --primary:        #5AAFD6;
+    --primary-hover:  #6FBFE3;
+    --accent:         #E8A45F;
+    --gw-open:        #4CB077;
+    --gw-limited:     #D9A82E;
+    --gw-closed:      #E0695E;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:             #0B1219;
+  --surface:        #111C25;
+  --surface-raised: #16232D;
+  --ink:            #E7EDF1;
+  --ink-muted:      #93A3AE;
+  --line:           #22323D;
+  --primary:        #5AAFD6;
+  --primary-hover:  #6FBFE3;
+  --accent:         #E8A45F;
+  --gw-open:        #4CB077;
+  --gw-limited:     #D9A82E;
+  --gw-closed:      #E0695E;
+}
+
+html { color-scheme: light dark; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  font-variant-numeric: tabular-nums;   /* all figures align in tables */
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, .display { font-family: var(--font-serif); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

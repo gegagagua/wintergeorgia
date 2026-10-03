@@ -1,0 +1,218 @@
+@import "tailwindcss";
+@import "./design-tokens.css";
+
+/* next/font provides --font-noto-sans-georgian / --font-noto-serif-georgian
+   on <html>; we point --font-sans / --font-serif at them so nothing in
+   design-tokens.css needs to change. */
+:root {
+  --font-sans: var(--font-noto-sans-georgian), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-noto-serif-georgian), Georgia, serif;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-accent: var(--accent);
+
+  --color-night: var(--gw-night);
+  --color-glacier: var(--gw-glacier);
+  --color-snow: var(--gw-snow);
+  --color-ice: var(--gw-ice);
+  --color-ice-bright: var(--gw-ice-bright);
+  --color-dawn: var(--gw-dawn);
+  --color-dawn-soft: var(--gw-dawn-soft);
+  --color-fog: var(--gw-fog);
+
+  --color-status-open: var(--gw-open);
+  --color-status-limited: var(--gw-limited);
+  --color-status-closed: var(--gw-closed);
+
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+  --spacing-6: var(--space-6);
+  --spacing-7: var(--space-7);
+  --spacing-8: var(--space-8);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  --container-site: var(--container);
+}
+
+/* Focus ring — WCAG 2.2 AA. Never rely on outline: none anywhere. */
+:where(a, button, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+  outline: 2px solid var(--primary-hover);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+:lang(ka) {
+  line-height: 1.65;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status-board rise-in — one orchestrated motion per docs/01-brand.md. */
+@keyframes gw-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.gw-rise {
+  animation: gw-rise var(--dur-base) var(--ease) both;
+}
+
+/* Horizontal marquee for the activity ticker */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Falling snow — vertical drift with a subtle horizontal wander. */
+@keyframes gw-snow {
+  0%   { transform: translate3d(0, -10vh, 0); opacity: 0; }
+  8%   { opacity: var(--gw-flake-opacity, 0.5); }
+  92%  { opacity: var(--gw-flake-opacity, 0.5); }
+  100% { transform: translate3d(var(--gw-drift, 0), 110vh, 0); opacity: 0; }
+}
+
+/* Gondola cabins glide along the cable in the hero scene */
+@keyframes gw-gondola-along {
+  0%   { transform: translate(620px, 302px); }
+  100% { transform: translate(1040px, 352px); }
+}
+@keyframes gw-gondola-along-back {
+  0%   { transform: translate(1040px, 352px); }
+  100% { transform: translate(620px, 302px); }
+}
+.gw-gondola-1 { animation: gw-gondola-along 22s linear infinite; }
+.gw-gondola-2 { animation: gw-gondola-along-back 22s linear infinite; animation-delay: -11s; }
+
+/* Distant skier glides down the slope on a loop */
+@keyframes gw-skier-glide {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translate(60px, 110px); opacity: 0; }
+}
+.gw-skier { animation: gw-skier-glide 9s ease-in infinite; transform-origin: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gw-gondola-1, .gw-gondola-2, .gw-skier { animation: none !important; }
+}
+
+/* Modern button glow — dawn-tinted, subtle */
+.gw-glow-cta {
+  box-shadow: 0 10px 30px -12px rgba(217, 132, 54, 0.55), 0 2px 0 0 rgba(255, 255, 255, 0.08) inset;
+}
+.gw-glow-cta:hover {
+  box-shadow: 0 16px 40px -14px rgba(217, 132, 54, 0.7), 0 2px 0 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+/* Unified hover kit — apply .gw-lift to any card / anchor for a
+   consistent lift + border-tint + soft shadow response. */
+.gw-lift {
+  transition:
+    transform 220ms var(--ease),
+    box-shadow 220ms var(--ease),
+    border-color 220ms var(--ease),
+    background-color 220ms var(--ease);
+  will-change: transform;
+}
+.gw-lift:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 18px 40px -22px rgba(14, 22, 32, 0.35), 0 2px 0 0 rgba(255, 255, 255, 0.6) inset;
+}
+:root[data-theme="dark"] .gw-lift:hover {
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.6), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset;
+}
+
+/* Image zoom inside a hovered ancestor with .group */
+.gw-zoom {
+  transition: transform 500ms var(--ease), filter 300ms var(--ease);
+  will-change: transform;
+}
+.group:hover .gw-zoom {
+  transform: scale(1.06);
+  filter: saturate(115%);
+}
+
+/* Underline slide for inline links */
+.gw-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 0% 1.5px;
+  background-position: 0 100%;
+  transition: background-size 220ms var(--ease);
+  padding-bottom: 1px;
+}
+.gw-underline:hover,
+.group:hover .gw-underline {
+  background-size: 100% 1.5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gw-lift, .gw-zoom, .gw-underline { transition: none !important; }
+  .gw-lift:hover { transform: none !important; }
+  .group:hover .gw-zoom { transform: none !important; }
+}
+
+/* Glass surface used on the hero booking widget */
+.gw-glass {
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: saturate(130%) blur(10px);
+  -webkit-backdrop-filter: saturate(130%) blur(10px);
+}
+
+/* Scroll-in reveal — cards drift up + fade as they enter viewport */
+@keyframes gw-reveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.gw-reveal {
+  animation: gw-reveal 400ms var(--ease) both;
+  animation-timeline: view();
+  animation-range: entry 5% cover 30%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gw-rise,
+  .gw-reveal { animation: none !important; }
+  [class*="animate-"] { animation: none !important; }
+}
+
+/* Site-wide utility: content section padding. */
+.site-container {
+  max-width: var(--container-site);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+@media (min-width: 768px) {
+  .site-container { padding-inline: var(--space-6); }
+}
+
+/* Topographic contour panel used when no real photo exists. */
+.contour {
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,.06) 0 1px, transparent 1px),
+    radial-gradient(circle at 85% 70%, rgba(255,255,255,.05) 0 1px, transparent 1px),
+    repeating-radial-gradient(circle at 30% 60%, transparent 0 22px, rgba(255,255,255,.045) 22px 23px),
+    repeating-radial-gradient(circle at 70% 30%, transparent 0 28px, rgba(255,255,255,.04) 28px 29px);
+  background-color: var(--gw-glacier);
+}

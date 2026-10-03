@@ -1,0 +1,53 @@
+{
+  "site": {
+    "name": "georgiawinter",
+    "tagline": "Booking and live conditions for Georgia's ski season."
+  },
+  "nav": {
+    "transfers": "Transfers",
+    "resorts": "Resorts",
+    "conditions": "Conditions",
+    "thingsToDo": "Things to do",
+    "events": "Events",
+    "journal": "Journal",
+    "bookTransfer": "Book a transfer"
+  },
+  "home": {
+    "heroKicker": "Live from the mountains",
+    "heroTitle": "Get to the snow. Know the road. Book the ride.",
+    "heroBody": "Fixed-price transfers to every Georgian ski resort, honest road status and snow depth updated by the drivers on the pass.",
+    "ctaBook": "Book a transfer",
+    "ctaConditions": "Check road & snow"
+  },
+  "status": {
+    "road": "Road",
+    "snow": "Snow",
+    "temperature": "Temperature",
+    "lifts": "Lifts",
+    "open": "Open",
+    "limited": "Limited",
+    "closed": "Closed",
+    "updatedAt": "Updated {when}"
+  },
+  "footer": {
+    "routes": "Popular routes",
+    "resorts": "Resorts",
+    "legal": "Legal",
+    "partners": "Partners",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "cancellation": "Cancellation policy",
+    "rights": "All rights reserved."
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "locale": {
+    "en": "English",
+    "ru": "Russian",
+    "ka": "Georgian",
+    "switch": "Language"
+  }
+}
