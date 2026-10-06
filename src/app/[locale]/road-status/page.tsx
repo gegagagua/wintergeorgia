@@ -62,7 +62,10 @@ export default async function RoadStatusPage({ params }: { params: Promise<{ loc
 
       <div className="mt-8 grid gap-4">
         {roads.map((r) => (
-          <article key={r.slug} className="rounded-lg border border-line bg-surface p-5">
+          <article
+            key={r.slug}
+            className="rounded-lg border border-line bg-surface p-5 shadow-[0_1px_0_rgba(14,22,32,0.03),0_1px_2px_rgba(14,22,32,0.04)] transition-[border-color,box-shadow] duration-200 hover:border-ink-muted/40 hover:shadow-[0_1px_0_rgba(14,22,32,0.03),0_8px_24px_-16px_rgba(14,22,32,0.18)]"
+          >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-small text-ink-muted">Road</p>
@@ -74,14 +77,19 @@ export default async function RoadStatusPage({ params }: { params: Promise<{ loc
               <StatusPill status={r.status} label={ts(r.status)} />
             </div>
             {r.note ? <p className="mt-4 text-ink">{r.note[l]}</p> : null}
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               {r.serves.map((s) => (
-                <Link key={s} href={`/resorts/${s}` as never} className="rounded-pill border border-line bg-surface-raised px-3 py-1 text-small text-ink hover:border-primary-hover">
+                <Link
+                  key={s}
+                  href={`/resorts/${s}` as never}
+                  className="inline-flex h-7 items-center gap-1.5 rounded-pill border border-line bg-surface-raised px-3 text-small text-ink transition-[border-color,background-color,color] duration-150 hover:border-primary-hover hover:bg-primary/[0.06] hover:text-primary"
+                >
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary/60" aria-hidden="true" />
                   Serves {s}
                 </Link>
               ))}
               <span className="ml-auto">
-                <LinkButton href="/transfers" variant="cta" size="sm">Book a transfer</LinkButton>
+                <LinkButton href="/transfers" variant="cta" size="sm" arrow>Book a transfer</LinkButton>
               </span>
             </div>
           </article>

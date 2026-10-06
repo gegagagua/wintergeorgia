@@ -7,26 +7,29 @@ type Variant = "primary" | "cta" | "ghost" | "outline";
 type Size = "sm" | "md" | "lg";
 
 const base =
-  "group/btn inline-flex items-center justify-center gap-2 font-medium transition-[filter,box-shadow,background,border-color,color] duration-150 " +
+  "group/btn relative inline-flex select-none items-center justify-center gap-2 font-medium tracking-[-0.005em] " +
+  "transition-[transform,box-shadow,background-color,border-color,color,filter] duration-200 ease-[cubic-bezier(.2,.7,.3,1)] " +
   "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primary-hover " +
-  "disabled:cursor-not-allowed disabled:opacity-60";
+  "active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 disabled:active:translate-y-0";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-primary text-white hover:bg-primary-hover shadow-[0_6px_20px_-10px_rgba(44,127,168,0.6)]",
+    "bg-primary text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.14),0_1px_2px_rgba(14,22,32,0.08),0_8px_20px_-14px_rgba(44,127,168,0.55)] " +
+    "hover:bg-primary-hover hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_1px_2px_rgba(14,22,32,0.08),0_14px_28px_-16px_rgba(44,127,168,0.65)]",
   cta:
-    "relative overflow-hidden bg-accent text-white gw-glow-cta hover:brightness-105 " +
-    // subtle inner light — the "warm dawn" without adding a second color
-    "before:absolute before:inset-0 before:bg-[linear-gradient(180deg,rgba(255,255,255,0.15)_0%,rgba(255,255,255,0)_45%)] before:pointer-events-none",
+    "bg-accent text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_1px_2px_rgba(14,22,32,0.1),0_10px_26px_-14px_rgba(217,132,54,0.55)] " +
+    "hover:brightness-[1.04] hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.22),0_1px_2px_rgba(14,22,32,0.1),0_16px_34px_-14px_rgba(217,132,54,0.7)] " +
+    "before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit] before:bg-[linear-gradient(180deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0)_55%)]",
   outline:
-    "border border-line bg-surface text-ink hover:border-primary-hover hover:bg-surface-raised",
-  ghost: "text-ink hover:bg-surface-raised",
+    "border border-line bg-surface text-ink shadow-[0_1px_0_rgba(14,22,32,0.03)] " +
+    "hover:border-primary-hover hover:bg-surface-raised hover:text-primary",
+  ghost: "text-ink hover:bg-surface-raised hover:text-primary",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-8 rounded-sm px-3 text-small",
-  md: "h-10 rounded-sm px-4 text-small",
-  lg: "h-12 rounded-sm px-6",
+  sm: "h-9 rounded-md px-3.5 text-[13px]",
+  md: "h-11 rounded-md px-5 text-[14px]",
+  lg: "h-12 rounded-lg px-6 text-[15px]",
 };
 
 type CommonProps = {
@@ -43,7 +46,7 @@ function ArrowIcon({ visible }: { visible: boolean }) {
     <ArrowRight
       aria-hidden="true"
       strokeWidth={2}
-      className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-1"
+      className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5"
     />
   );
 }

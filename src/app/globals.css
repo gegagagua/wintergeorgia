@@ -49,6 +49,20 @@
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+
+  --text-display: var(--text-display);
+  --text-display--line-height: var(--lh-display);
+  --text-h1: var(--text-h1);
+  --text-h1--line-height: var(--lh-h1);
+  --text-h2: var(--text-h2);
+  --text-h2--line-height: var(--lh-h2);
+  --text-h3: var(--text-h3);
+  --text-h3--line-height: var(--lh-h3);
+  --text-body: var(--text-body);
+  --text-body--line-height: var(--lh-body);
+  --text-small: var(--text-small);
+  --text-small--line-height: var(--lh-small);
 
   --container-site: var(--container);
 }
