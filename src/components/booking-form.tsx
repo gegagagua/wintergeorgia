@@ -13,6 +13,7 @@ import {
   quoteRoute,
   type Extras,
 } from "@/lib/pricing";
+import { readAttribution, track } from "@/lib/analytics";
 
 const tomorrow = () => {
   const d = new Date();
@@ -51,6 +52,8 @@ export function BookingForm({ route }: { route: Route }) {
       return;
     }
     startTransition(async () => {
+      const attribution = readAttribution();
+      track("booking_started", { routeSlug: route.slug, vehicleClass: vc, pax });
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,6 +73,7 @@ export function BookingForm({ route }: { route: Route }) {
           flightNo: isAirport ? flightNo || undefined : undefined,
           extras,
           amountGel: quote.valid ? quote.amount : 0,
+          attribution,
         }),
       });
       if (!res.ok) {

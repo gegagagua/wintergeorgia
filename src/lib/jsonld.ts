@@ -207,6 +207,27 @@ export function newsArticleLd({
   };
 }
 
+export function imageObjectLd({
+  url,
+  caption,
+  width,
+  height,
+}: {
+  url: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+}): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ImageObject",
+    contentUrl: url,
+    ...(caption ? { caption } : {}),
+    ...(width ? { width } : {}),
+    ...(height ? { height } : {}),
+  };
+}
+
 export function faqLd(items: { q: string; a: string }[]): Json {
   return {
     "@context": "https://schema.org",
@@ -216,5 +237,123 @@ export function faqLd(items: { q: string; a: string }[]): Json {
       name: i.q,
       acceptedAnswer: { "@type": "Answer", text: i.a },
     })),
+  };
+}
+
+/**
+ * AggregateRating + Review nodes. Caller must enforce the 5-review floor.
+ * We also require every review to have a bookingRef — this prevents
+ * someone attaching an unverified string to the schema.
+ */
+export function reviewsLd({
+  itemName,
+  reviews,
+  aggregate,
+}: {
+  itemName: string;
+  reviews: {
+    bookingRef: string;
+    rating: number;
+    body: string;
+    authorFirstName: string;
+    publishedAt: string;
+  }[];
+  aggregate: { value: number; count: number };
+}): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: itemName,
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: aggregate.value.toFixed(1),
+      reviewCount: aggregate.count,
+      bestRating: 5,
+      worstRating: 1,
+    },
+    review: reviews.map((r) => ({
+      "@type": "Review",
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: r.rating,
+        bestRating: 5,
+        worstRating: 1,
+      },
+      author: { "@type": "Person", name: r.authorFirstName },
+      datePublished: r.publishedAt,
+      reviewBody: r.body,
+      // Keep the booking ref inside the schema so Google can see it is tied
+      // to a real transaction.
+      identifier: r.bookingRef,
+    })),
+  };
+}
+
+/**
+ * LocalBusiness JSON-LD. Caller must pass only values that are present —
+ * do not fill with placeholders. The function will omit keys whose value
+ * is null/undefined/empty.
+ */
+export function localBusinessLd({
+  locale,
+  name,
+  phone,
+  email,
+  streetAddress,
+  addressLocality,
+  postalCode,
+  countryCode = "GE",
+  lat,
+  lng,
+  priceRange,
+  aggregate,
+}: {
+  locale: Locale;
+  name: string;
+  phone?: string | null;
+  email?: string | null;
+  streetAddress?: string | null;
+  addressLocality?: string | null;
+  postalCode?: string | null;
+  countryCode?: string;
+  lat?: number;
+  lng?: number;
+  priceRange?: string;
+  aggregate?: { value: number; count: number } | null;
+}): Json {
+  const address =
+    streetAddress || addressLocality || postalCode
+      ? {
+          "@type": "PostalAddress",
+          ...(streetAddress ? { streetAddress } : {}),
+          ...(addressLocality ? { addressLocality } : {}),
+          ...(postalCode ? { postalCode } : {}),
+          addressCountry: countryCode,
+        }
+      : undefined;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name,
+    url: localeUrl(locale, "/"),
+    ...(phone ? { telephone: phone } : {}),
+    ...(email ? { email } : {}),
+    ...(address ? { address } : {}),
+    ...(lat !== undefined && lng !== undefined
+      ? { geo: { "@type": "GeoCoordinates", latitude: lat, longitude: lng } }
+      : {}),
+    ...(priceRange ? { priceRange } : {}),
+    ...(aggregate
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: aggregate.value.toFixed(1),
+            reviewCount: aggregate.count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
   };
 }

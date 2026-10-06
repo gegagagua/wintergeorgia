@@ -25,6 +25,27 @@ export type RoadSlug = "jvari-pass" | "goderdzi-pass" | "mestia-road" | "bakuria
 export type Status = "open" | "limited" | "closed";
 export type Restriction = "none" | "chains" | "4x4_only" | "lorries_banned";
 
+export type ResortImage = {
+  src: string;
+  caption?: I18n;
+  credit?: string;
+  width?: number;
+  height?: number;
+};
+
+export type LiftInfo = {
+  name: string;
+  kind: "chair" | "gondola" | "surface" | "conveyor" | "cable_car";
+  capacity?: number;
+  hours?: string;
+};
+
+export type TerrainSplit = {
+  beginner?: number;
+  intermediate?: number;
+  advanced?: number;
+};
+
 export type Resort = {
   slug: ResortSlug;
   name: I18n;
@@ -42,6 +63,16 @@ export type Resort = {
   hero: string;
   lat: number;
   lng: number;
+  /** Owner-supplied photos. Empty array → contour illustration fallback. */
+  images?: ResortImage[];
+  /** Terrain breakdown (percentages). All optional. */
+  terrain?: TerrainSplit;
+  longestRunKm?: number;
+  verticalDropM?: number;
+  lifts?: LiftInfo[];
+  webcams?: Array<{ name: string; url: string; attribution?: string }>;
+  parkingNote?: I18n;
+  faqs?: Array<{ q: I18n; a: I18n }>;
 };
 
 export type Route = {
@@ -57,6 +88,16 @@ export type Route = {
   isScheduled: boolean;
   description: I18n;
   prices: Partial<Record<VehicleClass, { priceGel: number; maxPax: number }>>;
+  images?: ResortImage[];
+  /** Marketplace / channel fields — rendered when exporting the CSV. */
+  marketplace?: {
+    description?: I18n;
+    inclusions?: I18n[];
+    exclusions?: I18n[];
+    meetingPoint?: I18n;
+    cancellationPolicy?: I18n;
+    channelPriceMultiplier?: number;
+  };
 };
 
 export type Road = {
@@ -85,6 +126,7 @@ export type SnowReport = {
 export type Place = {
   slug: string;
   resort: ResortSlug;
+  images?: ResortImage[];
   category:
     | "paragliding"
     | "quad"
@@ -110,6 +152,7 @@ export type Place = {
 export type EventItem = {
   slug: string;
   resort: ResortSlug;
+  images?: ResortImage[];
   place?: string;
   title: I18n;
   body: I18n;
@@ -122,18 +165,47 @@ export type EventItem = {
   featured?: boolean;
 };
 
+export type ArticleTemplate = "news" | "qa" | "comparison" | "guide";
+
+export type ArticleFaq = { q: I18n; a: I18n };
+
+export type ArticleComparisonRow = {
+  label: I18n;
+  values: I18n[];
+};
+
 export type Article = {
   slug: string;
   locale: Locale | "all";
   title: I18n;
   excerpt: I18n;
+  /** Rendered as paragraphs split by \n\n. For `qa`/`comparison`/`guide`
+   *  it is the long-form body in addition to the structured fields. Can be
+   *  empty while the writer drafts. */
   body: I18n;
   category: "news" | "price" | "alert" | "infrastructure" | "event" | "guide";
+  template?: ArticleTemplate;
   author: string;
   publishedAt: string;
   resort?: ResortSlug;
   route?: RouteSlug;
   isAlert?: boolean;
+  /** Target query line, shown in editor + used for `about` schema. */
+  targetQuery?: string;
+  /** The one-sentence answer that must open a qa page. */
+  oneSentenceAnswer?: I18n;
+  faqs?: ArticleFaq[];
+  comparison?: {
+    headers: I18n[];
+    rows: ArticleComparisonRow[];
+    verdict?: I18n;
+  };
+  /** Explicit CTA slug (route or resort) to override the default. */
+  ctaRoute?: RouteSlug;
+  ctaResort?: ResortSlug;
+  cover?: string;
+  /** True until the writer approves. Drafts render but with noindex. */
+  draft?: boolean;
 };
 
 export type Price = {
@@ -143,4 +215,8 @@ export type Price = {
   rentalSetDayGel: number;
   instructorHourGel: number;
   season: string;
+  /** ISO date confirming when the figure was last verified. */
+  asOf: string;
+  /** Where the number came from. */
+  source?: string;
 };

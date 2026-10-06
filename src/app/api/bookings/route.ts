@@ -29,6 +29,16 @@ const bookingSchema = z.object({
     .default({}),
   amountGel: z.number().int().positive(),
   turnstileToken: z.string().optional(),
+  attribution: z
+    .object({
+      utmSource: z.string().max(60).optional(),
+      utmMedium: z.string().max(60).optional(),
+      utmCampaign: z.string().max(120).optional(),
+      utmTerm: z.string().max(120).optional(),
+      utmContent: z.string().max(120).optional(),
+      referralCode: z.string().max(32).optional(),
+    })
+    .optional(),
 });
 
 export async function POST(request: NextRequest) {

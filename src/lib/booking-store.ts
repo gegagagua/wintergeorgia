@@ -43,6 +43,15 @@ export type Booking = {
   status: BookingStatus;
   paymentRef?: string;
   cancelledReason?: string;
+  /** Marketing attribution captured at booking time. */
+  attribution?: {
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    utmTerm?: string;
+    utmContent?: string;
+    referralCode?: string;
+  };
   createdAt: string;
   updatedAt: string;
 };

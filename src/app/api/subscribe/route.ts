@@ -7,7 +7,22 @@ const schema = z.object({
   address: z.string().min(3).max(200),
   locales: z.array(z.enum(["en", "ru", "ka"])).min(1).default(["en"]),
   resorts: z.array(z.string()).default([]),
-  topics: z.array(z.enum(["snow", "road", "events", "prices"])).default(["snow", "road"]),
+  resort: z.string().optional(),
+  routeSlug: z.string().optional(),
+  topics: z
+    .array(
+      z.enum([
+        "snow",
+        "road",
+        "events",
+        "prices",
+        "bulletin",
+        "season-opening",
+        "seat-available",
+        "price-drop",
+      ]),
+    )
+    .default(["bulletin"]),
 });
 
 /**

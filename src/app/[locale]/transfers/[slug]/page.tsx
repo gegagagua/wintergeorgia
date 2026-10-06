@@ -8,9 +8,16 @@ import { Table, THead, TR, TH, TD } from "@/components/ui/table";
 import { AlertBanner } from "@/components/ui/alert-banner";
 import { BookingForm } from "@/components/booking-form";
 import { LinkButton } from "@/components/ui/button";
+import { PaymentTrustRow } from "@/components/payment-trust-row";
 import { PeakArt } from "@/components/peaks";
+import { RelatedStrip } from "@/components/related-strip";
+import { relatedForRoute } from "@/lib/related";
+import { SeatAlertForm } from "@/components/seat-alert-form";
 import { findRoute, routes } from "@/content/routes";
 import { findResort } from "@/content/resorts";
+import { driversForRoute } from "@/content/drivers";
+import { Link } from "@/i18n/navigation";
+import Image from "next/image";
 import { pageMetadata } from "@/lib/metadata";
 import { breadcrumbLd, faqLd, productWithOfferLd } from "@/lib/jsonld";
 import type { Locale } from "@/i18n/routing";
@@ -53,6 +60,7 @@ export default async function RoutePage({
   const cheapest = Object.values(r.prices)
     .filter((p): p is { priceGel: number; maxPax: number } => Boolean(p))
     .sort((a, b) => a.priceGel - b.priceGel)[0];
+  const routeDrivers = driversForRoute(r.slug).slice(0, 4);
 
   return (
     <>
@@ -106,6 +114,9 @@ export default async function RoutePage({
                 {r.requires4x4 ? <span className="rounded-pill border border-dawn-soft/40 bg-dawn-soft/10 px-3 py-1 text-dawn-soft">4x4</span> : null}
                 {r.isScheduled ? <span className="rounded-pill border border-white/30 bg-white/10 px-3 py-1">Daily scheduled shuttle</span> : null}
               </div>
+              <div className="mt-6">
+                <PaymentTrustRow locale={l} tone="dark" compact />
+              </div>
             </div>
             <aside className="rounded-lg border border-white/10 bg-glacier/60 p-5">
               <p className="text-small text-white/70">From</p>
@@ -129,6 +140,9 @@ export default async function RoutePage({
             <p className="mt-2 text-small text-ink-muted">Price is final. Continue to secure payment when ready.</p>
             <div className="mt-6">
               <BookingForm route={r} />
+            </div>
+            <div className="mt-6">
+              <PaymentTrustRow locale={l} />
             </div>
           </div>
 
@@ -170,6 +184,48 @@ export default async function RoutePage({
               </div>
             ) : null}
 
+            {r.isScheduled ? (
+              <div className="rounded-lg border border-line bg-surface p-5">
+                <p className="text-small text-primary">Seat alert</p>
+                <p className="mt-1 text-small text-ink-muted">
+                  Scheduled shuttle. Get an email when a seat opens on your date.
+                </p>
+                <div className="mt-3">
+                  <SeatAlertForm routeSlug={r.slug} />
+                </div>
+              </div>
+            ) : null}
+
+            {routeDrivers.length > 0 ? (
+              <div className="rounded-lg border border-line bg-surface p-5">
+                <p className="text-small text-primary">Drivers on this route</p>
+                <ul className="mt-3 grid gap-3">
+                  {routeDrivers.map((d) => (
+                    <li key={d.slug}>
+                      <Link
+                        href={`/drivers/${d.slug}` as never}
+                        className="flex items-center gap-3 hover:text-primary"
+                      >
+                        {d.photo ? (
+                          <span className="relative inline-block h-10 w-10 shrink-0 overflow-hidden rounded-full border border-line">
+                            <Image src={d.photo} alt={d.firstName} fill sizes="40px" className="object-cover" />
+                          </span>
+                        ) : (
+                          <span className="inline-block h-10 w-10 shrink-0 rounded-full border border-line bg-surface-raised" />
+                        )}
+                        <span>
+                          <span className="block">{d.firstName}</span>
+                          <span className="block text-small text-ink-muted tabular">
+                            {d.vehicle.make} {d.vehicle.model} · {d.vehicle.plate}
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
             <div className="rounded-lg border border-line bg-surface p-5">
               <p className="text-small text-primary">Live road status</p>
               <div className="mt-2 flex items-center gap-2">
@@ -184,6 +240,8 @@ export default async function RoutePage({
           </aside>
         </div>
       </section>
+
+      <RelatedStrip items={relatedForRoute(r.slug, l)} title="Related for this route" />
     </>
   );
 }

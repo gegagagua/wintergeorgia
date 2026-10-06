@@ -1,9 +1,11 @@
 import type { Article } from "./types";
+import { contentPages } from "./content-pages";
 
-export const articles: Article[] = [
+const seedArticles: Article[] = [
   {
     slug: "gudauri-opens-december-14",
     locale: "all",
+    template: "news",
     title: {
       en: "Gudauri opens on 14 December",
       ru: "Гудаури открывается 14 декабря",
@@ -93,3 +95,7 @@ export const articles: Article[] = [
     resort: "gudauri",
   },
 ];
+
+export const articles: Article[] = [...seedArticles, ...contentPages].sort(
+  (a, b) => (a.publishedAt < b.publishedAt ? 1 : -1),
+);

@@ -17,6 +17,7 @@ import { HowItWorks } from "@/components/how-it-works";
 import { TrustBar } from "@/components/trust-bar";
 import { ActivityTicker } from "@/components/activity-ticker";
 import { Testimonials } from "@/components/testimonials";
+import { FactsPanel } from "@/components/facts-panel";
 import { ResortThumb } from "@/components/resort-thumb";
 import { RouteThumb } from "@/components/route-thumb";
 import { Gallery } from "@/components/gallery";
@@ -25,7 +26,9 @@ import { resorts } from "@/content/resorts";
 import { routes } from "@/content/routes";
 import { events } from "@/content/events";
 import { articles } from "@/content/articles";
-import { breadcrumbLd, faqLd } from "@/lib/jsonld";
+import { drivers } from "@/content/drivers";
+import { aggregateRating, latestReviews } from "@/config/reviews";
+import { breadcrumbLd, faqLd, reviewsLd } from "@/lib/jsonld";
 import type { Locale } from "@/i18n/routing";
 
 export default async function HomePage({
@@ -42,6 +45,9 @@ export default async function HomePage({
 
   const featured = events.filter((e) => e.featured).slice(0, 2);
   const latest = articles.slice(0, 3);
+  const topReviews = latestReviews(5);
+  const agg = aggregateRating();
+  const publishedDrivers = drivers.filter((d) => d.published).length;
 
   return (
     <>
@@ -64,6 +70,17 @@ export default async function HomePage({
                 a: "New Year and Christmas weeks: at least four weeks. Any other time: 48 hours is comfortable.",
               },
             ]),
+            // AggregateRating only emitted when the owner has approved ≥5
+            // reviews tied to real bookings.
+            ...(agg
+              ? [
+                  reviewsLd({
+                    itemName: "georgiawinter",
+                    aggregate: agg,
+                    reviews: topReviews,
+                  }),
+                ]
+              : []),
           ]),
         }}
       />
@@ -101,9 +118,13 @@ export default async function HomePage({
               </LinkButton>
             </div>
             <dl className="mt-10 grid w-full max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-6 text-small">
-              <Stat number={140} suffix="+" label="Vetted drivers" />
-              <Stat number={10} label="Operating routes" />
-              <Stat number={6} label="Resorts covered" />
+              {publishedDrivers > 0 ? (
+                <Stat number={publishedDrivers} label="Driver profiles" />
+              ) : (
+                <Stat number={routes.filter((r) => r.requires4x4).length} label="4x4 routes" />
+              )}
+              <Stat number={routes.length} label="Operating routes" />
+              <Stat number={resorts.length} label="Resorts covered" />
             </dl>
           </div>
 
@@ -244,10 +265,17 @@ export default async function HomePage({
         <Gallery />
       </div>
 
-      {/* Testimonials */}
+      {/* Facts, not slogans — real numbers only */}
       <div className="border-y border-line bg-surface-raised">
-        <Testimonials />
+        <FactsPanel locale={l} />
       </div>
+
+      {/* Verified reviews — rendered only after real reviews exist */}
+      {topReviews.length > 0 ? (
+        <div className="border-b border-line">
+          <Testimonials reviews={topReviews} rating={agg} locale={l} />
+        </div>
+      ) : null}
 
       {/* Events */}
       <section className="site-container py-16">

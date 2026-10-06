@@ -33,10 +33,14 @@
     "routes": "Popular routes",
     "resorts": "Resorts",
     "legal": "Legal",
+    "about": "About us",
     "partners": "Partners",
     "terms": "Terms",
     "privacy": "Privacy",
     "cancellation": "Cancellation policy",
+    "drivers": "Drivers",
+    "webcams": "Webcams",
+    "prices": "Prices",
     "rights": "All rights reserved."
   },
   "theme": {
@@ -48,6 +52,7 @@
     "en": "English",
     "ru": "Russian",
     "ka": "Georgian",
+    "he": "Hebrew",
     "switch": "Language"
   }
 }

@@ -2,8 +2,10 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { cn } from "@/lib/cn";
 import type { Locale } from "@/i18n/routing";
 import type { Status, Restriction } from "@/content/types";
-import { findRoad, findSnow } from "@/content/roads";
+import { findRoad } from "@/content/roads";
 import { findResort } from "@/content/resorts";
+import { liveSnowFor, seasonStateFor } from "@/config/season";
+import { SeasonAlertForm } from "@/components/season-alert-form";
 
 type Props = {
   locale: Locale;
@@ -24,10 +26,46 @@ const statusLabelColor: Record<Status, string> = {
   closed: "text-status-closed",
 };
 
+const seasonCopy = {
+  en: {
+    opensIn: (d: number) =>
+      d <= 0 ? "Opening today" : d === 1 ? "Opens tomorrow" : `Opens in ${d} days`,
+    openingDate: "Expected opening",
+    notMeasured: "Not measured yet",
+    seasonOver: "Season closed",
+    seasonSummary: "Season closed — back in December",
+    kicker: "Preseason",
+    notify: "Email me when the lifts turn",
+    openingAt: "Lifts spin at",
+  },
+  ru: {
+    opensIn: (d: number) =>
+      d <= 0 ? "Открытие сегодня" : d === 1 ? "Открытие завтра" : `Открытие через ${d} дн.`,
+    openingDate: "Планируемое открытие",
+    notMeasured: "Пока не замеряем",
+    seasonOver: "Сезон закрыт",
+    seasonSummary: "Сезон закрыт — возвращаемся в декабре",
+    kicker: "Межсезонье",
+    notify: "Напишите, когда подъёмники заработают",
+    openingAt: "Подъёмники — с",
+  },
+  ka: {
+    opensIn: (d: number) =>
+      d <= 0 ? "დღეს იხსნება" : d === 1 ? "ხვალ იხსნება" : `იხსნება ${d} დღეში`,
+    openingDate: "სავარაუდო გახსნა",
+    notMeasured: "ჯერ არ იზომება",
+    seasonOver: "სეზონი დახურულია",
+    seasonSummary: "სეზონი დახურულია — ვბრუნდებით დეკემბერში",
+    kicker: "სეზონგარე",
+    notify: "შემატყობინეთ, როცა საბაგიროები ჩაირთვება",
+    openingAt: "საბაგიროები — ",
+  },
+};
+
 /**
- * Signature component. Four cells: road, snow, temperature, lifts.
- * Values fade+rise 8px staggered 130ms on load (docs/01-brand.md).
- * `tone="dark"` uses dark-surface cells so it reads well on a glacier hero.
+ * Signature component. In-season: four live cells (road, snow, temp, lifts).
+ * Preseason: countdown + capture form, never a fake zero.
+ * Closed: a short summary panel.
  */
 export async function StatusBoard({
   locale,
@@ -38,13 +76,105 @@ export async function StatusBoard({
   const t = await getTranslations("status");
   const fmt = await getFormatter();
   const road = findRoad(primaryRoad);
-  const snow = findSnow(primaryResort);
   const resort = findResort(primaryResort);
+  if (!road || !resort) return null;
 
-  if (!road || !snow || !resort) return null;
+  const season = seasonStateFor(resort);
+  const snowReport = liveSnowFor(resort);
+  const sc = seasonCopy[locale];
+  const isDark = tone === "dark";
 
   const updated = (iso: string) =>
     fmt.dateTime(new Date(iso), { hour: "2-digit", minute: "2-digit" });
+  const dateShort = (iso: string) =>
+    fmt.dateTime(new Date(iso), { month: "short", day: "numeric" });
+
+  if (season.state !== "open") {
+    return (
+      <section
+        aria-label="Conditions board"
+        className={cn(
+          "overflow-hidden rounded-lg border",
+          isDark ? "border-white/10 bg-white/5" : "border-line bg-surface",
+        )}
+      >
+        <div className={cn("grid gap-6 p-6 md:grid-cols-[1.3fr_1fr] md:p-8")}>
+          <div>
+            <p
+              className={cn(
+                "text-small tabular",
+                isDark ? "text-dawn-soft" : "text-primary",
+              )}
+            >
+              {season.state === "preseason" ? sc.kicker : sc.seasonOver}
+            </p>
+            <h3
+              className={cn(
+                "mt-2 font-serif text-[28px] leading-[36px] md:text-[32px] md:leading-[40px]",
+                isDark ? "text-snow" : "text-ink",
+              )}
+            >
+              {season.state === "preseason" && season.daysToOpen !== undefined
+                ? sc.opensIn(season.daysToOpen)
+                : sc.seasonSummary}
+            </h3>
+            {season.state === "preseason" && season.opensOn ? (
+              <p className={cn("mt-3 text-small", isDark ? "text-white/70" : "text-ink-muted")}>
+                {sc.openingAt} <span className="tabular">{dateShort(season.opensOn)}</span>
+                {season.reason ? ` · ${season.reason}` : ""}
+              </p>
+            ) : null}
+
+            {road ? (
+              <div className={cn("mt-5 flex items-center gap-2 text-small")}>
+                <span
+                  aria-hidden="true"
+                  className={cn("inline-block h-2 w-2 rounded-full", dotColor[road.status])}
+                />
+                <span className={isDark ? "text-white/85" : "text-ink"}>
+                  {road.name[locale]} · {t(road.status)}
+                </span>
+                <span className={isDark ? "text-white/50" : "text-ink-muted"}>
+                  · {t("updatedAt", { when: updated(road.updatedAt) })}
+                </span>
+              </div>
+            ) : null}
+          </div>
+
+          {season.state === "preseason" ? (
+            <div
+              className={cn(
+                "rounded-md border p-4",
+                isDark ? "border-white/10 bg-glacier/60" : "border-line bg-surface-raised",
+              )}
+            >
+              <p className={cn("text-small", isDark ? "text-white/70" : "text-ink-muted")}>
+                {sc.notify}
+              </p>
+              <div className="mt-3">
+                <SeasonAlertForm resort={resort.slug} tone={tone} />
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </section>
+    );
+  }
+
+  // In-season board.
+  const snowCell = snowReport
+    ? {
+        label: t("snow"),
+        value: `${snowReport.topCm} cm`,
+        status: (snowReport.new24hCm >= 5 ? "open" : snowReport.baseCm < 20 ? "limited" : "open") as Status,
+        meta: `${resort.name[locale]} · +${snowReport.new24hCm} cm 24h`,
+      }
+    : {
+        label: t("snow"),
+        value: sc.notMeasured,
+        status: "limited" as Status,
+        meta: resort.name[locale],
+      };
 
   const cells: {
     label: string;
@@ -58,38 +188,41 @@ export async function StatusBoard({
       value: t(road.status),
       status: road.status,
       meta: `${road.name[locale]} · ${t("updatedAt", { when: updated(road.updatedAt) })}`,
-      tone:
-        road.restriction !== "none"
-          ? restrictionLabel(road.restriction, locale)
-          : undefined,
+      tone: road.restriction !== "none" ? restrictionLabel(road.restriction, locale) : undefined,
     },
-    {
-      label: t("snow"),
-      value: `${snow.topCm} cm`,
-      status:
-        snow.new24hCm >= 5 ? "open" : snow.baseCm < 20 ? "limited" : "open",
-      meta: `${resort.name[locale]} · +${snow.new24hCm} cm 24h`,
-    },
-    {
-      label: t("temperature"),
-      value: `${snow.tempC > 0 ? "+" : ""}${snow.tempC}°C`,
-      status: "open",
-      meta: `${resort.name[locale]} · ${snow.visibility[locale]}`,
-    },
-    {
-      label: t("lifts"),
-      value: `${snow.liftsOpen}/${snow.liftsTotal}`,
-      status:
-        snow.liftsOpen === snow.liftsTotal
-          ? "open"
-          : snow.liftsOpen === 0
-            ? "closed"
-            : "limited",
-      meta: t("updatedAt", { when: updated(snow.measuredAt) }),
-    },
+    snowCell,
+    snowReport
+      ? {
+          label: t("temperature"),
+          value: `${snowReport.tempC > 0 ? "+" : ""}${snowReport.tempC}°C`,
+          status: "open",
+          meta: `${resort.name[locale]} · ${snowReport.visibility[locale]}`,
+        }
+      : {
+          label: t("temperature"),
+          value: sc.notMeasured,
+          status: "limited",
+          meta: resort.name[locale],
+        },
+    snowReport
+      ? {
+          label: t("lifts"),
+          value: `${snowReport.liftsOpen}/${snowReport.liftsTotal}`,
+          status:
+            snowReport.liftsOpen === snowReport.liftsTotal
+              ? "open"
+              : snowReport.liftsOpen === 0
+                ? "closed"
+                : "limited",
+          meta: t("updatedAt", { when: updated(snowReport.measuredAt) }),
+        }
+      : {
+          label: t("lifts"),
+          value: sc.notMeasured,
+          status: "limited",
+          meta: resort.name[locale],
+        },
   ];
-
-  const isDark = tone === "dark";
 
   return (
     <section

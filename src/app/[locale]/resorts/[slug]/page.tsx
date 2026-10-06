@@ -16,8 +16,11 @@ import { articles } from "@/content/articles";
 import { places } from "@/content/places";
 import { findSnow } from "@/content/roads";
 import { prices } from "@/content/prices";
+import { PhotoGallery } from "@/components/photo-gallery";
+import { RelatedStrip } from "@/components/related-strip";
+import { relatedForResort } from "@/lib/related";
 import { pageMetadata } from "@/lib/metadata";
-import { breadcrumbLd, touristAttractionLd, faqLd } from "@/lib/jsonld";
+import { breadcrumbLd, touristAttractionLd, faqLd, imageObjectLd } from "@/lib/jsonld";
 import type { Locale } from "@/i18n/routing";
 
 export function generateStaticParams() {
@@ -88,7 +91,18 @@ export default async function ResortPage({
               { q: `How do I get to ${r.name.en}?`, a: `Book a transfer from Tbilisi, Kutaisi Airport, or the nearest major city. Fixed price, refunded if the road closes.` },
               { q: `When does ${r.name.en} open?`, a: r.seasonFrom ? `Season runs from ${r.seasonFrom} to ${r.seasonTo}. Dates depend on snowfall.` : `Season timing depends on snowfall each year.` },
               { q: `Is ${r.name.en} good for beginners?`, a: bestFor },
+              ...(r.faqs ?? []).map((f) => ({ q: f.q[l], a: f.a[l] })),
             ]),
+            ...(r.images && r.images.length > 0
+              ? r.images.slice(0, 3).map((img) =>
+                  imageObjectLd({
+                    url: img.src,
+                    caption: img.caption?.[l],
+                    width: img.width,
+                    height: img.height,
+                  }),
+                )
+              : []),
           ]),
         }}
       />
@@ -157,6 +171,13 @@ export default async function ResortPage({
         </div>
       </section>
 
+      {/* Photo gallery (only when real photos exist) */}
+      {r.images && r.images.length > 0 ? (
+        <section className="site-container pt-10">
+          <PhotoGallery images={r.images} locale={l} heroPriority />
+        </section>
+      ) : null}
+
       {/* Highlights + best for */}
       <section className="site-container py-12">
         <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
@@ -184,6 +205,84 @@ export default async function ResortPage({
           </aside>
         </div>
       </section>
+
+      {/* Terrain, lifts, longest run — rendered only when data present */}
+      {(r.terrain || r.lifts?.length || r.longestRunKm || r.verticalDropM) ? (
+        <section className="border-t border-line bg-surface py-12">
+          <div className="site-container grid gap-8 md:grid-cols-[1.3fr_1fr]">
+            {r.terrain ? (
+              <div>
+                <h2 className="font-serif text-[24px] leading-[32px]">Terrain split</h2>
+                <dl className="mt-4 grid grid-cols-3 gap-3">
+                  {r.terrain.beginner !== undefined ? (
+                    <TerrainStat label="Beginner" value={`${r.terrain.beginner}%`} tone="open" />
+                  ) : null}
+                  {r.terrain.intermediate !== undefined ? (
+                    <TerrainStat label="Intermediate" value={`${r.terrain.intermediate}%`} tone="limited" />
+                  ) : null}
+                  {r.terrain.advanced !== undefined ? (
+                    <TerrainStat label="Advanced" value={`${r.terrain.advanced}%`} tone="closed" />
+                  ) : null}
+                </dl>
+                <dl className="mt-4 grid grid-cols-2 gap-3 text-small">
+                  {r.longestRunKm ? (
+                    <div className="rounded-md border border-line bg-surface-raised p-3">
+                      <dt className="text-ink-muted">Longest run</dt>
+                      <dd className="mt-1 font-serif text-[22px] leading-[28px] tabular">{r.longestRunKm} km</dd>
+                    </div>
+                  ) : null}
+                  {r.verticalDropM ? (
+                    <div className="rounded-md border border-line bg-surface-raised p-3">
+                      <dt className="text-ink-muted">Vertical drop</dt>
+                      <dd className="mt-1 font-serif text-[22px] leading-[28px] tabular">{r.verticalDropM} m</dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </div>
+            ) : null}
+
+            {r.lifts && r.lifts.length > 0 ? (
+              <div>
+                <h2 className="font-serif text-[24px] leading-[32px]">Lifts</h2>
+                <ul className="mt-4 grid gap-2 text-small">
+                  {r.lifts.map((lift) => (
+                    <li
+                      key={lift.name}
+                      className="flex items-center justify-between rounded-md border border-line bg-surface-raised p-3"
+                    >
+                      <span>
+                        {lift.name}
+                        <span className="ml-2 text-ink-muted">
+                          · {lift.kind.replace("_", " ")}
+                        </span>
+                      </span>
+                      <span className="tabular text-ink-muted">
+                        {lift.capacity ? `${lift.capacity}/h` : ""}
+                        {lift.hours ? ` · ${lift.hours}` : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Resort FAQ (owner-supplied in content/resorts.ts, rendered only when present) */}
+      {r.faqs && r.faqs.length > 0 ? (
+        <section className="site-container py-12">
+          <h2 className="font-serif text-[28px] leading-[36px]">Questions people actually ask</h2>
+          <dl className="mt-6 grid gap-3">
+            {r.faqs.map((f, i) => (
+              <div key={i} className="rounded-lg border border-line bg-surface p-5">
+                <dt className="font-medium text-ink">{f.q[l]}</dt>
+                <dd className="mt-2 text-small text-ink-muted">{f.a[l]}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ) : null}
 
       {/* Transfers */}
       {resortRoutes.length > 0 ? (
@@ -280,6 +379,9 @@ export default async function ResortPage({
         </section>
       ) : null}
 
+      {/* Related — auto-generated internal links from the data model */}
+      <RelatedStrip items={relatedForResort(r.slug, l)} title={`More for ${r.name[l]}`} />
+
       {/* CTA */}
       <section className="border-y border-line bg-glacier text-snow">
         <div className="site-container flex flex-col items-start justify-between gap-6 py-10 md:flex-row md:items-center">
@@ -299,6 +401,19 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div>
       <div className="text-small text-white/60">{label}</div>
       <div className="mt-0.5 font-serif text-[20px] leading-[28px] tabular text-snow">{value}</div>
+    </div>
+  );
+}
+
+function TerrainStat({ label, value, tone }: { label: string; value: string; tone: "open" | "limited" | "closed" }) {
+  const bar = tone === "open" ? "bg-status-open" : tone === "limited" ? "bg-status-limited" : "bg-status-closed";
+  return (
+    <div className="rounded-md border border-line bg-surface-raised p-3">
+      <div className="flex items-center justify-between">
+        <span className="text-small text-ink-muted">{label}</span>
+        <span className="font-serif text-[20px] leading-[26px] tabular">{value}</span>
+      </div>
+      <div className={`mt-2 h-1 rounded-full ${bar}`} style={{ width: value }} />
     </div>
   );
 }

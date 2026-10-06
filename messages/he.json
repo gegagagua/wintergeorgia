@@ -1,0 +1,58 @@
+{
+  "site": {
+    "name": "georgiawinter",
+    "tagline": "הזמנות ותנאי שטח חיים לעונת הסקי בגאורגיה."
+  },
+  "nav": {
+    "transfers": "הסעות",
+    "resorts": "אתרי סקי",
+    "conditions": "תנאי דרך",
+    "thingsToDo": "מה לעשות",
+    "events": "אירועים",
+    "journal": "יומן",
+    "bookTransfer": "הזמנת הסעה"
+  },
+  "home": {
+    "heroKicker": "חי מההרים",
+    "heroTitle": "להגיע לשלג. לדעת את הדרך. להזמין את הנסיעה.",
+    "heroBody": "הסעות במחיר קבוע לכל אתרי הסקי בגאורגיה, סטטוס דרך אמיתי ועומק שלג שמתעדכן על ידי הנהגים בעלייה.",
+    "ctaBook": "להזמין הסעה",
+    "ctaConditions": "לבדוק דרך ושלג"
+  },
+  "status": {
+    "road": "דרך",
+    "snow": "שלג",
+    "temperature": "טמפרטורה",
+    "lifts": "מעליות",
+    "open": "פתוח",
+    "limited": "מוגבל",
+    "closed": "סגור",
+    "updatedAt": "עודכן {when}"
+  },
+  "footer": {
+    "routes": "מסלולים נפוצים",
+    "resorts": "אתרים",
+    "legal": "משפטי",
+    "about": "אודות",
+    "partners": "לשותפים",
+    "terms": "תנאים",
+    "privacy": "פרטיות",
+    "cancellation": "מדיניות ביטול",
+    "drivers": "נהגים",
+    "webcams": "מצלמות",
+    "prices": "מחירים",
+    "rights": "כל הזכויות שמורות."
+  },
+  "theme": {
+    "toggle": "החלפת ערכת נושא",
+    "light": "בהיר",
+    "dark": "כהה"
+  },
+  "locale": {
+    "en": "אנגלית",
+    "ru": "רוסית",
+    "ka": "גאורגית",
+    "he": "עברית",
+    "switch": "שפה"
+  }
+}

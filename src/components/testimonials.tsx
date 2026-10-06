@@ -3,66 +3,81 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { cn } from "@/lib/cn";
-
-type Testimonial = {
-  quote: string;
-  name: string;
-  origin: string;
-  route: string;
-  rating: number;
-  hue: number; // for avatar background
-};
-
-const items: Testimonial[] = [
-  {
-    quote:
-      "Driver waited at arrivals with a name sign despite my flight being late by 90 minutes. Winter tyres, chains, English. Best 40 GEL I have ever spent.",
-    name: "Marta Kovač",
-    origin: "Ljubljana",
-    route: "TBS Airport → Gudauri · Sedan",
-    rating: 5,
-    hue: 20,
-  },
-  {
-    quote:
-      "Booked a minivan for six. Kids loved the ski rack outside, we loved the WhatsApp updates. Return leg fixed on the spot when weather changed.",
-    name: "Yousef Al-Rashid",
-    origin: "Dubai",
-    route: "Tbilisi → Bakuriani · Minivan",
-    rating: 5,
-    hue: 200,
-  },
-  {
-    quote:
-      "The Jvari Pass closed the morning of my trip. I got a WhatsApp reschedule option within 20 minutes — zero drama, zero call centre.",
-    name: "Anna Petrova",
-    origin: "Saint Petersburg",
-    route: "TBS Airport → Gudauri · Sedan",
-    rating: 5,
-    hue: 340,
-  },
-  {
-    quote:
-      "4x4 to Kazbegi with a driver who actually knew the mountain — showed me Gergeti Trinity as a bonus stop. Ten out of ten.",
-    name: "Tom Whitfield",
-    origin: "Manchester",
-    route: "Gudauri → Kazbegi · 4x4 SUV",
-    rating: 5,
-    hue: 140,
-  },
-];
+import type { Review } from "@/config/reviews";
 
 const AUTO_MS = 6000;
 
-export function Testimonials() {
+const strings = {
+  en: {
+    kicker: "From the guests",
+    titleWithRating: (count: number, avg: number) =>
+      `${count} verified reviews · ${avg.toFixed(1)} average`,
+    titleWithoutRating: "Reviews are published once the booking is complete",
+    emptyBody:
+      "We only publish reviews tied to a real booking. Nothing invented, nothing bought. Numbers appear below five reviews — the aggregate rating stays hidden until we have five.",
+    prev: "Previous",
+    next: "Next",
+    goto: (n: number) => `Go to slide ${n}`,
+  },
+  ru: {
+    kicker: "От гостей",
+    titleWithRating: (count: number, avg: number) =>
+      `${count} проверенных отзыва · ${avg.toFixed(1)} в среднем`,
+    titleWithoutRating: "Отзывы публикуются после завершённой поездки",
+    emptyBody:
+      "Публикуем только отзывы, привязанные к реальному бронированию. Ничего придуманного, ничего купленного. Пока отзывов меньше пяти — средняя оценка скрыта.",
+    prev: "Назад",
+    next: "Вперёд",
+    goto: (n: number) => `Слайд ${n}`,
+  },
+  ka: {
+    kicker: "სტუმრებისგან",
+    titleWithRating: (count: number, avg: number) =>
+      `${count} შემოწმებული შეფასება · საშუალო ${avg.toFixed(1)}`,
+    titleWithoutRating: "შეფასებები ქვეყნდება მოგზაურობის დასრულების შემდეგ",
+    emptyBody:
+      "ვაქვეყნებთ მხოლოდ ნამდვილ ჯავშანთან მიბმულ შეფასებებს. არაფერი მოგონილი, არაფერი ნაყიდი. ხუთ შეფასებამდე საშუალო ქულა იმალება.",
+    prev: "უკან",
+    next: "წინ",
+    goto: (n: number) => `სლაიდი ${n}`,
+  },
+};
+
+/**
+ * Real-only review carousel. If `reviews` is empty, we render an honest
+ * empty state (no fake quotes). The aggregate line only appears once the
+ * owner has approved ≥5 reviews — enforced here *and* in reviews.ts.
+ */
+export function Testimonials({
+  reviews,
+  rating,
+  locale = "en",
+}: {
+  reviews: Review[];
+  rating: { value: number; count: number } | null;
+  locale?: "en" | "ru" | "ka";
+}) {
+  const s = strings[locale];
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (paused) return;
-    const id = window.setInterval(() => setI((v) => (v + 1) % items.length), AUTO_MS);
+    if (paused || reviews.length <= 1) return;
+    const id = window.setInterval(() => setI((v) => (v + 1) % reviews.length), AUTO_MS);
     return () => window.clearInterval(id);
-  }, [paused]);
+  }, [paused, reviews.length]);
+
+  if (reviews.length === 0) {
+    return (
+      <section className="site-container py-16">
+        <p className="text-small text-primary">{s.kicker}</p>
+        <h2 className="mt-1 font-serif text-[28px] leading-[36px] md:text-[32px] md:leading-[40px]">
+          {s.titleWithoutRating}
+        </h2>
+        <p className="mt-4 max-w-prose text-ink-muted">{s.emptyBody}</p>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -72,29 +87,33 @@ export function Testimonials() {
     >
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <p className="text-small text-primary">From the guests</p>
+          <p className="text-small text-primary">{s.kicker}</p>
           <h2 className="mt-1 font-serif text-[28px] leading-[36px] md:text-[32px] md:leading-[40px]">
-            340+ trips a month, 4.9 average
+            {rating
+              ? s.titleWithRating(rating.count, rating.value)
+              : s.titleWithoutRating}
           </h2>
         </div>
-        <div className="hidden gap-2 md:flex">
-          <button
-            type="button"
-            aria-label="Previous"
-            onClick={() => setI((v) => (v - 1 + items.length) % items.length)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-line text-ink hover:border-primary-hover"
-          >
-            <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-          </button>
-          <button
-            type="button"
-            aria-label="Next"
-            onClick={() => setI((v) => (v + 1) % items.length)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-line text-ink hover:border-primary-hover"
-          >
-            <ChevronRight className="h-4 w-4" strokeWidth={1.75} />
-          </button>
-        </div>
+        {reviews.length > 1 ? (
+          <div className="hidden gap-2 md:flex">
+            <button
+              type="button"
+              aria-label={s.prev}
+              onClick={() => setI((v) => (v - 1 + reviews.length) % reviews.length)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-line text-ink hover:border-primary-hover"
+            >
+              <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
+            </button>
+            <button
+              type="button"
+              aria-label={s.next}
+              onClick={() => setI((v) => (v + 1) % reviews.length)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-line text-ink hover:border-primary-hover"
+            >
+              <ChevronRight className="h-4 w-4" strokeWidth={1.75} />
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div className="relative overflow-hidden rounded-lg border border-line bg-surface">
@@ -102,69 +121,56 @@ export function Testimonials() {
           className="flex transition-transform duration-500 ease-out"
           style={{ transform: `translateX(-${i * 100}%)` }}
         >
-          {items.map((t) => (
-            <article key={t.name} className="w-full shrink-0 p-6 md:p-10">
+          {reviews.map((r) => (
+            <article key={r.id} className="w-full shrink-0 p-6 md:p-10">
               <div className="mb-4 flex gap-0.5 text-accent">
-                {Array.from({ length: 5 }).map((_, s) => (
+                {Array.from({ length: 5 }).map((_, idx) => (
                   <Star
-                    key={s}
+                    key={idx}
                     className="h-4 w-4"
-                    fill={s < t.rating ? "currentColor" : "none"}
+                    fill={idx < r.rating ? "currentColor" : "none"}
                     strokeWidth={1.5}
                   />
                 ))}
               </div>
               <blockquote className="font-serif text-[22px] leading-[32px] text-ink md:text-[26px] md:leading-[36px]">
-                &ldquo;{t.quote}&rdquo;
+                &ldquo;{r.body}&rdquo;
               </blockquote>
-              <div className="mt-6 flex items-center gap-3">
-                <Avatar hue={t.hue} initials={initials(t.name)} />
-                <div>
-                  <p className="text-ink">{t.name} <span className="text-ink-muted">· {t.origin}</span></p>
-                  <p className="text-small text-ink-muted tabular">{t.route}</p>
-                </div>
+              <div className="mt-6 text-small text-ink-muted">
+                <span className="text-ink">{r.authorFirstName}</span>
+                {r.authorOrigin ? ` · ${r.authorOrigin}` : ""}
+                <span className="mx-2 tabular">·</span>
+                <span className="tabular">
+                  {new Date(r.travelDate).toLocaleDateString("en-GB", {
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+                <span className="mx-2 tabular">·</span>
+                <span className="tabular">ref {r.bookingRef}</span>
               </div>
             </article>
           ))}
         </div>
       </div>
 
-      <div className="mt-4 flex justify-center gap-2">
-        {items.map((_, idx) => (
-          <button
-            type="button"
-            key={idx}
-            aria-label={`Go to slide ${idx + 1}`}
-            aria-current={i === idx ? "true" : undefined}
-            onClick={() => setI(idx)}
-            className={cn(
-              "h-1.5 rounded-full transition-all duration-200",
-              i === idx ? "w-6 bg-accent" : "w-1.5 bg-line hover:bg-primary/60",
-            )}
-          />
-        ))}
-      </div>
+      {reviews.length > 1 ? (
+        <div className="mt-4 flex justify-center gap-2">
+          {reviews.map((_, idx) => (
+            <button
+              type="button"
+              key={idx}
+              aria-label={s.goto(idx + 1)}
+              aria-current={i === idx ? "true" : undefined}
+              onClick={() => setI(idx)}
+              className={cn(
+                "h-1.5 rounded-full transition-all duration-200",
+                i === idx ? "w-6 bg-accent" : "w-1.5 bg-line hover:bg-primary/60",
+              )}
+            />
+          ))}
+        </div>
+      ) : null}
     </section>
-  );
-}
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("");
-}
-
-function Avatar({ hue, initials }: { hue: number; initials: string }) {
-  return (
-    <div
-      aria-hidden="true"
-      style={{ background: `hsl(${hue} 30% 22%)`, color: `hsl(${hue} 40% 82%)` }}
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-small font-medium"
-    >
-      {initials}
-    </div>
   );
 }

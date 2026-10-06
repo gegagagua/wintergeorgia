@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getFormatter } from "next-intl/server";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Table, THead, TR, TH, TD } from "@/components/ui/table";
 import { LinkButton } from "@/components/ui/button";
 import { AlertBanner } from "@/components/ui/alert-banner";
-import { prices } from "@/content/prices";
+import { Link } from "@/i18n/navigation";
+import { pricesBySeason, allSeasons } from "@/content/prices";
 import { resorts, findResort } from "@/content/resorts";
 import { routes } from "@/content/routes";
 import { pageMetadata } from "@/lib/metadata";
 import { breadcrumbLd } from "@/lib/jsonld";
 import type { Locale } from "@/i18n/routing";
+
+const CURRENT_SEASON = "2026/27";
 
 export async function generateMetadata({
   params,
@@ -20,9 +23,9 @@ export async function generateMetadata({
   const { locale } = await params;
   const l = locale as Locale;
   const t = {
-    en: { title: "Prices 2026/27 — lift, rental, instructor, transfer", desc: "Confirmed 2026/27 prices for every Georgian ski resort: lift pass, gear rental, instructor, transfer from Tbilisi." },
-    ru: { title: "Цены 2026/27 — подъёмник, прокат, инструктор, трансфер", desc: "Подтверждённые цены сезона 2026/27 по каждому курорту Грузии: ски-пасс, прокат, инструктор, трансфер из Тбилиси." },
-    ka: { title: "ფასები 2026/27 — საბაგირო, ქირავნობა, ინსტრუქტორი, ტრანსფერი", desc: "დადასტურებული 2026/27 ფასები საქართველოს ყველა კურორტისთვის: საბაგირო, აღჭურვილობის ქირავნობა, ინსტრუქტორი, ტრანსფერი თბილისიდან." },
+    en: { title: `Prices ${CURRENT_SEASON} — lift, rental, instructor, transfer`, desc: `Confirmed ${CURRENT_SEASON} prices for every Georgian ski resort, each with the date it was last verified.` },
+    ru: { title: `Цены ${CURRENT_SEASON} — подъёмник, прокат, инструктор, трансфер`, desc: `Подтверждённые цены сезона ${CURRENT_SEASON} по каждому курорту Грузии; у каждой — дата последней проверки.` },
+    ka: { title: `ფასები ${CURRENT_SEASON} — საბაგირო, ქირავნობა, ინსტრუქტორი, ტრანსფერი`, desc: `დადასტურებული ${CURRENT_SEASON} ფასები საქართველოს ყველა კურორტისთვის — თითოეულს დადასტურების თარიღი აქვს.` },
   }[l];
   return pageMetadata({ locale: l, path: "/prices", title: t.title, description: t.desc, ogKicker: "Prices" });
 }
@@ -31,11 +34,12 @@ export default async function PricesPage({ params }: { params: Promise<{ locale:
   const { locale } = await params;
   const l = locale as Locale;
   setRequestLocale(l);
+  const fmt = await getFormatter();
 
   const label = {
     en: {
       crumb: "Prices",
-      title: "Prices for the 2026/27 season",
+      title: `Prices for the ${CURRENT_SEASON} season`,
       liftHead: "Lift passes and gear",
       transferHead: "Transfers from Tbilisi",
       day: "Day",
@@ -49,11 +53,15 @@ export default async function PricesPage({ params }: { params: Promise<{ locale:
       minivan: "Minivan",
       suv: "4x4",
       shared: "Shared seat",
-      note: "Prices confirmed with resort offices for the 2026/27 season. Kazbegi is not a lift resort — costs are for guide services.",
+      asOf: "as of",
+      source: "Source",
+      note: "Prices confirmed with resort offices. Figures carry the date they were last verified.",
+      archive: "Price archive",
+      bookRow: "Book",
     },
     ru: {
       crumb: "Цены",
-      title: "Цены на сезон 2026/27",
+      title: `Цены на сезон ${CURRENT_SEASON}`,
       liftHead: "Подъёмники и снаряжение",
       transferHead: "Трансферы из Тбилиси",
       day: "День",
@@ -67,11 +75,15 @@ export default async function PricesPage({ params }: { params: Promise<{ locale:
       minivan: "Минивэн",
       suv: "4x4",
       shared: "Место",
-      note: "Цены подтверждены с офисами курортов на сезон 2026/27. Казбеги — не подъёмный курорт; указана стоимость услуг гида.",
+      asOf: "на дату",
+      source: "Источник",
+      note: "Цены подтверждены с офисами курортов. У каждой цифры — дата последней проверки.",
+      archive: "Архив цен",
+      bookRow: "Заказать",
     },
     ka: {
       crumb: "ფასები",
-      title: "ფასები 2026/27 სეზონისთვის",
+      title: `ფასები ${CURRENT_SEASON} სეზონისთვის`,
       liftHead: "საბაგირო და აღჭურვილობა",
       transferHead: "ტრანსფერები თბილისიდან",
       day: "დღე",
@@ -85,10 +97,16 @@ export default async function PricesPage({ params }: { params: Promise<{ locale:
       minivan: "მინივენი",
       suv: "4x4",
       shared: "ადგილი",
-      note: "ფასები კურორტების ოფისებთან დადასტურებულია 2026/27 სეზონისთვის. ყაზბეგი — არაა საბაგირო კურორტი; ფასი გიდის მომსახურებისთვისაა.",
+      asOf: "მდგომარეობით",
+      source: "წყარო",
+      note: "ფასები კურორტების ოფისებთან დადასტურებულია. ყველა რიცხვს აქვს დადასტურების თარიღი.",
+      archive: "ფასების არქივი",
+      bookRow: "დაჯავშნა",
     },
   }[l];
 
+  const current = pricesBySeason(CURRENT_SEASON);
+  const seasons = allSeasons().filter((s) => s !== CURRENT_SEASON);
   const tbilisiRoutes = routes.filter((r) => r.fromSlug === "tbilisi" || r.fromSlug === "tbilisi-airport");
 
   return (
@@ -103,7 +121,7 @@ export default async function PricesPage({ params }: { params: Promise<{ locale:
         }}
       />
       <Breadcrumb items={[{ name: "Home", path: "/" }, { name: label.crumb }]} />
-      <SectionHeader kicker="2026 / 27" title={label.title} />
+      <SectionHeader kicker={CURRENT_SEASON} title={label.title} />
 
       <AlertBanner tone="info" title={label.note} />
 
@@ -117,19 +135,30 @@ export default async function PricesPage({ params }: { params: Promise<{ locale:
               <TH align="right">{label.week}</TH>
               <TH align="right">{label.rental}</TH>
               <TH align="right">{label.instructor}</TH>
+              <TH align="right">{label.asOf}</TH>
             </TR>
           </THead>
           <tbody>
-            {prices.map((p) => {
+            {current.map((p) => {
               const r = findResort(p.resort);
               if (!r) return null;
               return (
                 <TR key={p.resort}>
-                  <TD>{r.name[l]}</TD>
+                  <TD>
+                    <Link
+                      href={`/resorts/${r.slug}` as never}
+                      className="hover:text-primary"
+                    >
+                      {r.name[l]}
+                    </Link>
+                  </TD>
                   <TD align="right">{p.liftPassDayGel > 0 ? `${p.liftPassDayGel} ₾` : "—"}</TD>
                   <TD align="right">{p.liftPassWeekGel > 0 ? `${p.liftPassWeekGel} ₾` : "—"}</TD>
                   <TD align="right">{p.rentalSetDayGel} ₾</TD>
                   <TD align="right">{p.instructorHourGel} ₾</TD>
+                  <TD align="right" className="tabular text-small text-ink-muted">
+                    {fmt.dateTime(new Date(p.asOf), { month: "short", day: "numeric", year: "numeric" })}
+                  </TD>
                 </TR>
               );
             })}
@@ -148,6 +177,7 @@ export default async function PricesPage({ params }: { params: Promise<{ locale:
               <TH align="right">{label.sedan}</TH>
               <TH align="right">{label.minivan}</TH>
               <TH align="right">{label.suv}</TH>
+              <TH align="right">{label.bookRow}</TH>
             </TR>
           </THead>
           <tbody>
@@ -159,11 +189,37 @@ export default async function PricesPage({ params }: { params: Promise<{ locale:
                 <TD align="right">{r.prices.sedan ? `${r.prices.sedan.priceGel} ₾` : "—"}</TD>
                 <TD align="right">{r.prices.minivan ? `${r.prices.minivan.priceGel} ₾` : "—"}</TD>
                 <TD align="right">{r.prices.suv4x4 ? `${r.prices.suv4x4.priceGel} ₾` : "—"}</TD>
+                <TD align="right">
+                  <Link
+                    href={`/transfers/${r.slug}` as never}
+                    className="text-small text-primary hover:underline"
+                  >
+                    {label.bookRow} →
+                  </Link>
+                </TD>
               </TR>
             ))}
           </tbody>
         </Table>
       </div>
+
+      {seasons.length > 0 ? (
+        <div className="mt-10 rounded-lg border border-line bg-surface p-5">
+          <p className="text-small text-primary">{label.archive}</p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {seasons.map((s) => (
+              <li key={s}>
+                <Link
+                  href={`/prices/${s.replace("/", "-")}` as never}
+                  className="rounded-pill border border-line bg-surface-raised px-3 py-1 text-small tabular hover:border-primary-hover"
+                >
+                  {s}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="mt-10 rounded-lg border border-line bg-surface-raised p-6">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">

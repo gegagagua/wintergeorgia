@@ -3,13 +3,16 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Analytics } from "@/components/analytics";
+import { AttributionCapture } from "@/components/attribution-capture";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { themeInitScript } from "@/components/theme-toggle";
-import { organizationLd, webSiteLd } from "@/lib/jsonld";
+import { organizationLd, webSiteLd, localBusinessLd } from "@/lib/jsonld";
+import { company } from "@/config/company";
+import { aggregateRating } from "@/config/reviews";
 import { sans, serif } from "@/lib/fonts";
 import { siteUrl } from "@/lib/site";
-import { routing, type Locale } from "@/i18n/routing";
+import { routing, isRtl, type Locale } from "@/i18n/routing";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -35,6 +38,7 @@ export async function generateMetadata({
         en: "/",
         ru: "/ru",
         ka: "/ka",
+        he: "/he",
         "x-default": "/",
       },
     },
@@ -77,6 +81,7 @@ export default async function LocaleLayout({
   return (
     <html
       lang={typedLocale}
+      dir={isRtl(typedLocale) ? "rtl" : "ltr"}
       suppressHydrationWarning
       className={`${sans.variable} ${serif.variable}`}
     >
@@ -85,7 +90,21 @@ export default async function LocaleLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([organizationLd(), webSiteLd(typedLocale)]),
+            __html: JSON.stringify([
+              organizationLd(),
+              webSiteLd(typedLocale),
+              localBusinessLd({
+                locale: typedLocale,
+                name: company.tradingName,
+                phone: company.contacts.phone,
+                email: company.contacts.email,
+                streetAddress: company.registeredAddress?.[typedLocale] ?? null,
+                addressLocality: "Tbilisi",
+                countryCode: "GE",
+                priceRange: "₾₾",
+                aggregate: aggregateRating(),
+              }),
+            ]),
           }}
         />
       </head>
@@ -105,6 +124,7 @@ export default async function LocaleLayout({
             <Footer />
           </div>
           <Analytics />
+          <AttributionCapture />
         </NextIntlClientProvider>
       </body>
     </html>

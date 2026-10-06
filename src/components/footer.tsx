@@ -1,15 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { LogoLockup } from "./logo";
+import { routes } from "@/content/routes";
+import { resorts } from "@/content/resorts";
 
-const resortSlugs = ["gudauri", "bakuriani", "tetnuldi", "hatsvali", "goderdzi", "kazbegi"] as const;
-const routeSlugs = [
-  "tbilisi-airport-gudauri",
-  "tbilisi-gudauri",
-  "tbilisi-bakuriani",
-  "tbilisi-kazbegi",
-  "zugdidi-mestia",
-] as const;
+const resortSlugs = resorts.map((r) => r.slug);
+// All routes, not just a hand-picked 5. Keeps every booking page one click from any page.
+const routeSlugs = routes.map((r) => r.slug);
 
 const routeLabel = (slug: string) =>
   slug
@@ -51,6 +48,7 @@ export async function Footer() {
           ))}
         </FooterColumn>
         <FooterColumn title={t("legal")}>
+          <FooterLink href="/about">{t("about")}</FooterLink>
           <FooterLink href="/terms">{t("terms")}</FooterLink>
           <FooterLink href="/privacy">{t("privacy")}</FooterLink>
           <FooterLink href="/cancellation">{t("cancellation")}</FooterLink>

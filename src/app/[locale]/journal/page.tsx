@@ -48,12 +48,20 @@ export default async function JournalIndex({ params }: { params: Promise<{ local
           <Link key={a.slug} href={`/journal/${a.slug}` as never} className="group">
             <Card interactive className="h-full">
               <div className="flex items-center gap-2 text-small">
-                <span className="text-primary">{a.category}</span>
+                <span className="text-primary">{a.template === "qa" ? "Q&A" : a.template ?? a.category}</span>
                 {a.isAlert ? <StatusPill status="closed" label="Alert" /> : null}
+                {a.draft ? (
+                  <span className="rounded-pill border border-status-limited/40 bg-status-limited/10 px-2 py-0.5 text-small text-status-limited">
+                    Draft
+                  </span>
+                ) : null}
                 <span className="ml-auto tabular text-ink-muted">{fmt.dateTime(new Date(a.publishedAt), { day: "numeric", month: "short" })}</span>
               </div>
               <h2 className="mt-2 font-serif text-[20px] leading-[28px] group-hover:text-primary">{a.title[l]}</h2>
               <p className="mt-2 line-clamp-3 text-small text-ink-muted">{a.excerpt[l]}</p>
+              {a.targetQuery ? (
+                <p className="mt-3 border-t border-line pt-3 text-small text-ink-muted tabular">{a.targetQuery}</p>
+              ) : null}
             </Card>
           </Link>
         ))}

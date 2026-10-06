@@ -38,16 +38,34 @@ function checkAdminAuth(request: NextRequest): NextResponse | null {
   return unauthorized();
 }
 
+const REF_COOKIE = "gw_ref";
+const REF_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
+
+function applyReferralCookie(request: NextRequest, response: NextResponse) {
+  const ref = request.nextUrl.searchParams.get("ref");
+  if (!ref) return response;
+  // Minimal safety: alphanumeric + dash, 3-32 chars.
+  if (!/^[a-zA-Z0-9-]{3,32}$/.test(ref)) return response;
+  response.cookies.set(REF_COOKIE, ref, {
+    maxAge: REF_MAX_AGE_SECONDS,
+    httpOnly: false,
+    sameSite: "lax",
+    path: "/",
+  });
+  return response;
+}
+
 export default function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   if (path.startsWith("/admin")) {
     const auth = checkAdminAuth(request);
     if (auth) return auth;
-    return NextResponse.next();
+    return applyReferralCookie(request, NextResponse.next());
   }
 
-  return intlMiddleware(request);
+  const intl = intlMiddleware(request);
+  return applyReferralCookie(request, intl);
 }
 
 export const config = {
