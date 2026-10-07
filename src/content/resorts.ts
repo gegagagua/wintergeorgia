@@ -42,6 +42,86 @@ export const resorts: Resort[] = [
       ru: "Райдеров среднего уровня и фрирайдеров, впервые едущих на Кавказ.",
       ka: "საშუალო დონის მოთხილამურეებისა და ფრირაიდერებისთვის, ვინც პირველად ჩამოდის კავკასიაში.",
     },
+    terrain: { beginner: 30, intermediate: 45, advanced: 25 },
+    longestRunKm: 7,
+    verticalDropM: 1289,
+    lifts: [
+      { name: "Sadzele chair", kind: "chair", capacity: 2400, hours: "09:00–17:00" },
+      { name: "Kudebi chair", kind: "chair", capacity: 2000, hours: "09:00–17:00" },
+      { name: "New Gudauri gondola", kind: "gondola", capacity: 3000, hours: "09:00–17:00" },
+      { name: "Beginner conveyor", kind: "conveyor", capacity: 1200, hours: "09:00–17:00" },
+    ],
+    parkingNote: {
+      en: "Free parking at the base of New Gudauri and the Sadzele lift. On peak days, arrive before 09:00 or park at the Military Road pull-off and walk 400 m.",
+      ru: "Бесплатная парковка у Нью-Гудаури и подъёмника Садзеле. В пиковые дни приезжайте до 09:00 либо оставьте машину у расширения Военно-Грузинской дороги и 400 м пешком.",
+      ka: "უფასო პარკინგი ახალ გუდაურთან და სადძელეს საბაგიროსთან. პიკური დღეები — 09:00-მდე ან სამხედრო გზის ბოლოში, 400 მ ფეხით.",
+    },
+    faqs: [
+      {
+        q: { en: "Is Gudauri good for beginners?", ru: "Подходит ли Гудаури новичкам?", ka: "გუდაური ვარგა დამწყებებისთვის?" },
+        a: {
+          en: "Yes, on the lower slopes. The beginner conveyor and the lower Sadzele blues are gentle; the top-station reds and above-treeline terrain are not for a first week.",
+          ru: "Да, но только внизу. Учебный конвейер и нижние синие Садзеле — мягкие; верхние красные и выше зоны леса — не для первой недели.",
+          ka: "დიახ, ქვევით. დამწყებთა კონვეიერი და სადძელეს ქვედა ლურჯი ტრასები ნაზია; ზედა წითელი და ტყის ხაზის ზემოთ რელიეფი პირველი კვირისთვის არ ვარგა.",
+        },
+      },
+      {
+        q: { en: "When does Gudauri open?", ru: "Когда открывается Гудаури?", ka: "როდის იხსნება გუდაური?" },
+        a: {
+          en: "Early December in good snow years, mid-December in average ones. The 2026/27 season opens on 1 December with Sadzele, Kudebi and the beginner conveyor; the New Gudauri gondola joins on 20 December after its annual inspection.",
+          ru: "В начале декабря — в снежные годы, в середине — в обычные. Сезон 2026/27 открывается 1 декабря (Садзеле, Кудеби, учебка); гондола Нью-Гудаури — с 20 декабря после техосмотра.",
+          ka: "დეკემბრის დასაწყისში — თოვლიან წლებში, შუა რიცხვებში — ჩვეულებრივ. 2026/27 სეზონი 1 დეკემბრიდან იხსნება (სადძელე, კუდები, სასწავლო); ახალი გუდაურის გონდოლა 20 დეკემბრიდან, ტექდათვალიერების შემდეგ.",
+        },
+      },
+      {
+        q: { en: "How much is a lift pass?", ru: "Сколько стоит ски-пасс?", ka: "რამდენი ღირს აბონემენტი?" },
+        a: {
+          en: "90 GEL for the day pass in the 2026/27 season (+5 GEL vs last year). 470 GEL for the week; children under 6 free with a paying adult.",
+          ru: "Дневной — 90 GEL в сезоне 2026/27 (+5 GEL к прошлому). Недельный — 470 GEL; дети до 6 лет бесплатно со взрослым.",
+          ka: "დღიური — 90 GEL 2026/27 სეზონში (გასულ წელთან +5 GEL). კვირის — 470 GEL; 6 წლამდე ბავშვები უფასოდ ზრდასრულთან.",
+        },
+      },
+      {
+        q: { en: "Where should I rent gear?", ru: "Где брать прокат?", ka: "სად ვიქირაო აღჭურვილობა?" },
+        a: {
+          en: "The base-of-lift shops at Sadzele have the widest selection; prices are 30–40 GEL/day for the full set. Shops in the village (closer to the hotels on the ridge) are slightly cheaper and never run out of boots.",
+          ru: "У подъёмника Садзеле — самый большой выбор, 30–40 GEL в день за полный комплект. В посёлке у хребта — чуть дешевле и всегда есть ботинки.",
+          ka: "სადძელეს საბაგიროს ძირში — უდიდესი არჩევანი, 30–40 GEL დღეში სრული კომპლექტისთვის. ქედთან მდებარე მაღაზიები — ოდნავ იაფი და ფეხსაცმელი ყოველთვის აქვთ.",
+        },
+      },
+      {
+        q: { en: "Can I rent in Tbilisi and bring my own kit?", ru: "Можно ли арендовать в Тбилиси?", ka: "შემიძლია თბილისში ვიქირაო?" },
+        a: {
+          en: "Yes — two Tbilisi shops rent full sets for the week. Our vehicles carry a ski-rack for 3+ sets as a paid extra.",
+          ru: "Да — в Тбилиси пара прокатов выдаёт комплекты на неделю. Для 3+ комплектов добавьте «лыжный багажник» при бронировании.",
+          ka: "დიახ — თბილისში ორი მაღაზია ქირაობს კომპლექტებს კვირის ვადით. 3+ კომპლექტისთვის დაჯავშნისას „თხილამურის ჯიხური“ ემატება.",
+        },
+      },
+      {
+        q: { en: "What is parking like?", ru: "Как с парковкой?", ka: "როგორია პარკინგი?" },
+        a: {
+          en: "Free lots at New Gudauri and Sadzele. On peak days (New Year, long weekends), get there before 09:00 or park along the road and walk a few minutes.",
+          ru: "Бесплатные стоянки у Нью-Гудаури и Садзеле. В пик — до 09:00 или вдоль дороги с коротким пешком.",
+          ka: "უფასო პარკინგი ახალ გუდაურთან და სადძელესთან. პიკში — 09:00-მდე ან გზის გასწვრივ ფეხით.",
+        },
+      },
+      {
+        q: { en: "Is there backcountry access?", ru: "Есть ли бэккантри?", ka: "არის ბექქანთრი?" },
+        a: {
+          en: "Yes — the Kobi backcountry opens off the top station and the Chrdili ridge is a classic ski-tour. Guide required for both; the terrain is avalanche-prone and the local patrol does not sweep off-piste.",
+          ru: "Да — бэккантри Коби из верхней станции и хребет Чрдили (классика ски-тура). Гид обязателен: лавиноопасно, патруль за трассами не ищет.",
+          ka: "დიახ — კობის ბექქანთრი ზედა სადგურიდან და ჩრდილის ქედი — ski-tour-ის კლასიკა. გიდი აუცილებელი: ზვავური, პატრული ტრასის გარეთ არ ჩამოდის.",
+        },
+      },
+      {
+        q: { en: "What if the wind closes the top lift?", ru: "А если верхний закрыт из-за ветра?", ka: "თუ ზედა საბაგიროს ქარი დახურავს?" },
+        a: {
+          en: "Lower Sadzele and the New Gudauri gondola usually keep running. On wind-closure days the resort posts a sign at the base and refunds the top-ticket upgrade.",
+          ru: "Нижний Садзеле и гондола Нью-Гудаури обычно продолжают работать. В такой день курорт возвращает доплату за верх.",
+          ka: "ქვედა სადძელე და ახალი გუდაურის გონდოლა ჩვეულებრივ მუშაობენ. კურორტი ხელშეკრულებით აბრუნებს ზედა ბილეთის სხვაობას.",
+        },
+      },
+    ],
   },
   {
     slug: "bakuriani",

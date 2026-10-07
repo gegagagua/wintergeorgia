@@ -75,6 +75,13 @@ export type Resort = {
   faqs?: Array<{ q: I18n; a: I18n }>;
 };
 
+export type RouteRegion =
+  | "from-tbilisi"
+  | "from-airports"
+  | "svaneti"
+  | "adjara"
+  | "cross-country";
+
 export type Route = {
   slug: RouteSlug;
   from: I18n;
@@ -82,12 +89,21 @@ export type Route = {
   to: I18n;
   toSlug: string;
   toResort?: ResortSlug;
+  /** The grouping shown in /transfers, nav and footer. */
+  region: RouteRegion;
   distanceKm: number;
   durationMin: number;
   requires4x4: boolean;
   isScheduled: boolean;
   description: I18n;
   prices: Partial<Record<VehicleClass, { priceGel: number; maxPax: number }>>;
+  /** Optional schedule rows for routes with daily departures. */
+  schedule?: Array<{
+    departTime: string;
+    returnTime?: string;
+    runsDaily?: boolean;
+    note?: I18n;
+  }>;
   images?: ResortImage[];
   /** Marketplace / channel fields — rendered when exporting the CSV. */
   marketplace?: {
@@ -167,6 +183,8 @@ export type EventItem = {
 
 export type ArticleTemplate = "news" | "qa" | "comparison" | "guide";
 
+export type AnswerTopic = "getting-there" | "conditions" | "prices" | "gear";
+
 export type ArticleFaq = { q: I18n; a: I18n };
 
 export type ArticleComparisonRow = {
@@ -185,8 +203,13 @@ export type Article = {
   body: I18n;
   category: "news" | "price" | "alert" | "infrastructure" | "event" | "guide";
   template?: ArticleTemplate;
+  /** Required for template === "qa"; drives /answers index grouping. */
+  topic?: AnswerTopic;
   author: string;
   publishedAt: string;
+  /** Last meaningful edit. Required on evergreen Q&A so the UI can show
+   *  dateModified without a stale publishedAt. Falls back to publishedAt. */
+  updatedAt?: string;
   resort?: ResortSlug;
   route?: RouteSlug;
   isAlert?: boolean;

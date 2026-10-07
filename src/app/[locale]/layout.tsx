@@ -6,6 +6,7 @@ import { Analytics } from "@/components/analytics";
 import { AttributionCapture } from "@/components/attribution-capture";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { MuiProvider } from "@/mui/provider";
 import { themeInitScript } from "@/components/theme-toggle";
 import { organizationLd, webSiteLd, localBusinessLd } from "@/lib/jsonld";
 import { company } from "@/config/company";
@@ -34,13 +35,10 @@ export async function generateMetadata({
     applicationName: "georgiawinter",
     alternates: {
       canonical: path,
-      languages: {
-        en: "/",
-        ru: "/ru",
-        ka: "/ka",
-        he: "/he",
-        "x-default": "/",
-      },
+      languages: Object.fromEntries([
+        ...routing.locales.map((l) => [l, l === routing.defaultLocale ? "/" : `/${l}`]),
+        ["x-default", "/"],
+      ]) as Record<string, string>,
     },
     openGraph: {
       title: t("name"),
@@ -48,6 +46,7 @@ export async function generateMetadata({
       url: path,
       siteName: "georgiawinter",
       locale,
+      alternateLocale: routing.locales.filter((l) => l !== locale),
       type: "website",
       images: [`/api/og/home?locale=${locale}`],
     },
@@ -110,21 +109,23 @@ export default async function LocaleLayout({
       </head>
       <body className="bg-bg text-ink antialiased">
         <NextIntlClientProvider messages={messages}>
-          <div className="flex min-h-screen flex-col">
-            <a
-              href="#main"
-              className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-sm focus:bg-accent focus:px-3 focus:py-2 focus:text-white"
-            >
-              Skip to content
-            </a>
-            <Header />
-            <main id="main" className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </div>
-          <Analytics />
-          <AttributionCapture />
+          <MuiProvider>
+            <div className="flex min-h-screen flex-col">
+              <a
+                href="#main"
+                className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-sm focus:bg-accent focus:px-3 focus:py-2 focus:text-white"
+              >
+                Skip to content
+              </a>
+              <Header />
+              <main id="main" className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
+            <Analytics />
+            <AttributionCapture />
+          </MuiProvider>
         </NextIntlClientProvider>
       </body>
     </html>

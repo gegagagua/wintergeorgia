@@ -9,6 +9,8 @@ import { Price } from "@/components/ui/price";
 import { routes } from "@/content/routes";
 import { pageMetadata } from "@/lib/metadata";
 import { breadcrumbLd } from "@/lib/jsonld";
+import { routeFromPrice } from "@/lib/route-pricing";
+import { groupedRoutes, routeRegionLabel } from "@/lib/route-grouping";
 import type { Locale } from "@/i18n/routing";
 
 export async function generateMetadata({
@@ -64,37 +66,51 @@ export default async function TransfersIndex({ params }: { params: Promise<{ loc
 
       <section className="site-container pb-14">
         <SectionHeader kicker="All routes" title="Pick a route" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {routes.map((r) => {
-            const cheapest = Object.values(r.prices)
-              .filter((p): p is { priceGel: number; maxPax: number } => Boolean(p))
-              .sort((a, b) => a.priceGel - b.priceGel)[0];
-            return (
-              <Link key={r.slug} href={`/transfers/${r.slug}` as never} className="group">
-                <Card interactive className="h-full">
-                  <div className="flex items-center gap-2 text-small text-primary">
-                    <span className="tabular">{r.distanceKm} km</span>
-                    <span aria-hidden="true">·</span>
-                    <span className="tabular">{Math.round(r.durationMin / 15) * 15 / 60}h</span>
-                    {r.requires4x4 ? (
-                      <span className="ml-2 rounded-pill border border-status-limited/30 bg-status-limited/10 px-2 py-0.5 text-status-limited">4x4</span>
-                    ) : null}
-                    {r.isScheduled ? (
-                      <span className="rounded-pill border border-primary/30 bg-primary/5 px-2 py-0.5 text-primary">Daily shuttle</span>
-                    ) : null}
-                  </div>
-                  <h3 className="mt-2 font-serif text-[20px] leading-[28px] group-hover:text-primary">
-                    {r.from[l]} → {r.to[l]}
-                  </h3>
-                  <p className="mt-2 line-clamp-2 text-small text-ink-muted">{r.description[l]}</p>
-                  <div className="mt-4 flex items-end justify-between">
-                    {cheapest ? <Price gel={cheapest.priceGel} from /> : null}
-                    <span className="text-small text-primary">Book →</span>
-                  </div>
-                </Card>
-              </Link>
-            );
-          })}
+        <div className="space-y-10">
+          {groupedRoutes(routes).map((group) => (
+            <div key={group.id}>
+              <h2 className="mb-4 font-serif text-[22px] leading-[28px] text-primary">
+                {routeRegionLabel(group.id, l)}
+              </h2>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {group.routes.map((r) => {
+                  const from = routeFromPrice(r);
+                  return (
+                    <Link key={r.slug} href={`/transfers/${r.slug}` as never} className="group">
+                      <Card interactive className="h-full">
+                        <div className="flex items-center gap-2 text-small text-primary">
+                          <span className="tabular">{r.distanceKm} km</span>
+                          <span aria-hidden="true">·</span>
+                          <span className="tabular">{Math.round(r.durationMin / 15) * 15 / 60}h</span>
+                          {r.requires4x4 ? (
+                            <span className="ml-2 rounded-pill border border-status-limited/30 bg-status-limited/10 px-2 py-0.5 text-status-limited">4x4</span>
+                          ) : null}
+                          {r.isScheduled ? (
+                            <span className="rounded-pill border border-primary/30 bg-primary/5 px-2 py-0.5 text-primary">Daily shuttle</span>
+                          ) : null}
+                        </div>
+                        <h3 className="mt-2 font-serif text-[20px] leading-[28px] group-hover:text-primary">
+                          {r.from[l]} → {r.to[l]}
+                        </h3>
+                        <p className="mt-2 line-clamp-2 text-small text-ink-muted">{r.description[l]}</p>
+                        <div className="mt-4 flex items-end justify-between">
+                          {from ? (
+                            <div className="flex items-baseline gap-2">
+                              <Price gel={from.priceGel} from />
+                              <span className="text-small text-ink-muted">
+                                {from.perSeat ? "/seat" : "/vehicle"}
+                              </span>
+                            </div>
+                          ) : null}
+                          <span className="text-small text-primary">Book →</span>
+                        </div>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </div>

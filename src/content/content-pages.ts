@@ -13,8 +13,6 @@ import type { Article } from "./types";
  * before flipping `draft: false`.
  */
 
-const todayIsh = "2026-10-01T09:00:00Z";
-
 const E = (en: string) => ({ en, ru: en, ka: en });
 
 export const contentPages: Article[] = [
@@ -61,8 +59,10 @@ export const contentPages: Article[] = [
     ctaRoute: "tbilisi-airport-gudauri",
     resort: "gudauri",
     category: "guide",
+    topic: "conditions",
     author: "georgiawinter editorial",
-    publishedAt: todayIsh,
+    publishedAt: "2026-10-02T09:00:00Z",
+    updatedAt: "2026-10-02T09:00:00Z",
     draft: true,
   },
 
@@ -102,8 +102,10 @@ export const contentPages: Article[] = [
     ],
     ctaRoute: "tbilisi-airport-gudauri",
     category: "guide",
+    topic: "gear",
     author: "georgiawinter editorial",
-    publishedAt: todayIsh,
+    publishedAt: "2026-07-15T09:00:00Z",
+    updatedAt: "2026-09-30T09:00:00Z",
     draft: true,
   },
 
@@ -148,8 +150,10 @@ export const contentPages: Article[] = [
     ctaRoute: "tbilisi-gudauri",
     resort: "gudauri",
     category: "guide",
+    topic: "getting-there",
     author: "georgiawinter editorial",
-    publishedAt: todayIsh,
+    publishedAt: "2026-09-05T09:00:00Z",
+    updatedAt: "2026-09-30T09:00:00Z",
     draft: true,
   },
 
@@ -184,8 +188,10 @@ export const contentPages: Article[] = [
     ctaRoute: "tbilisi-gudauri",
     resort: "gudauri",
     category: "price",
+    topic: "prices",
     author: "georgiawinter editorial",
-    publishedAt: todayIsh,
+    publishedAt: "2026-09-20T09:00:00Z",
+    updatedAt: "2026-09-30T09:00:00Z",
     draft: true,
   },
 
@@ -213,8 +219,10 @@ export const contentPages: Article[] = [
     ctaResort: "gudauri",
     resort: "gudauri",
     category: "guide",
+    topic: "conditions",
     author: "georgiawinter editorial",
-    publishedAt: todayIsh,
+    publishedAt: "2026-09-28T09:00:00Z",
+    updatedAt: "2026-10-01T09:00:00Z",
     draft: true,
   },
 
@@ -242,8 +250,10 @@ export const contentPages: Article[] = [
     ctaResort: "gudauri",
     resort: "gudauri",
     category: "price",
+    topic: "prices",
     author: "georgiawinter editorial",
-    publishedAt: todayIsh,
+    publishedAt: "2026-10-05T09:00:00Z",
+    updatedAt: "2026-10-05T09:00:00Z",
     draft: true,
   },
 
@@ -269,8 +279,10 @@ export const contentPages: Article[] = [
     ctaRoute: "tbilisi-gudauri",
     resort: "gudauri",
     category: "guide",
+    topic: "getting-there",
     author: "georgiawinter editorial",
-    publishedAt: todayIsh,
+    publishedAt: "2026-08-14T09:00:00Z",
+    updatedAt: "2026-09-28T09:00:00Z",
     draft: true,
   },
 
@@ -298,8 +310,10 @@ export const contentPages: Article[] = [
     ctaRoute: "tbilisi-airport-gudauri",
     resort: "gudauri",
     category: "guide",
+    topic: "getting-there",
     author: "georgiawinter editorial",
-    publishedAt: todayIsh,
+    publishedAt: "2026-09-14T09:00:00Z",
+    updatedAt: "2026-09-30T09:00:00Z",
     draft: true,
   },
 
@@ -327,8 +341,10 @@ export const contentPages: Article[] = [
     ctaRoute: "tbilisi-gudauri",
     resort: "gudauri",
     category: "guide",
+    topic: "getting-there",
     author: "georgiawinter editorial",
-    publishedAt: todayIsh,
+    publishedAt: "2026-08-28T09:00:00Z",
+    updatedAt: "2026-09-28T09:00:00Z",
     draft: true,
   },
 
@@ -356,8 +372,10 @@ export const contentPages: Article[] = [
     ctaRoute: "zugdidi-mestia",
     resort: "tetnuldi",
     category: "guide",
+    topic: "getting-there",
     author: "georgiawinter editorial",
-    publishedAt: todayIsh,
+    publishedAt: "2026-08-02T09:00:00Z",
+    updatedAt: "2026-09-28T09:00:00Z",
     draft: true,
   },
 ];

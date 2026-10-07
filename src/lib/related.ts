@@ -42,9 +42,9 @@ export function relatedForResort(slug: ResortSlug, locale: Locale, limit = 6): R
   // Journal entries tagged with this resort.
   for (const a of articles.filter((x) => x.resort === slug).slice(0, 3)) {
     list.push({
-      href: `/journal/${a.slug}`,
+      href: a.template === "qa" ? `/answers/${a.slug}` : `/journal/${a.slug}`,
       title: a.title[locale],
-      kicker: a.template === "qa" ? "Q&A" : a.template ?? a.category,
+      kicker: a.template === "qa" ? "Answer" : a.template ?? a.category,
     });
   }
 
@@ -109,6 +109,21 @@ export function relatedForRoute(slug: RouteSlug, locale: Locale, limit = 6): Rel
     }
   }
 
+  // Answers tagged with this route or its resort.
+  for (const a of articles
+    .filter(
+      (x) =>
+        x.template === "qa" &&
+        (x.ctaRoute === r.slug || x.route === r.slug || (r.toResort && x.resort === r.toResort)),
+    )
+    .slice(0, 3)) {
+    list.push({
+      href: `/answers/${a.slug}`,
+      title: a.title[locale],
+      kicker: "Answer",
+    });
+  }
+
   return dedupe(list).slice(0, limit);
 }
 
@@ -171,9 +186,9 @@ export function relatedForArticle(slug: string, locale: Locale, limit = 6): Rela
     )
     .slice(0, 3)) {
     list.push({
-      href: `/journal/${other.slug}`,
+      href: other.template === "qa" ? `/answers/${other.slug}` : `/journal/${other.slug}`,
       title: other.title[locale],
-      kicker: other.template === "qa" ? "Q&A" : other.template ?? other.category,
+      kicker: other.template === "qa" ? "Answer" : other.template ?? other.category,
     });
   }
 

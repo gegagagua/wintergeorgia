@@ -12,18 +12,16 @@ import { CategoryTag } from "@/components/category-tag";
 import { StatusPill } from "@/components/ui/status-pill";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { QuickBookWidget } from "@/components/quick-book";
-import { FleetShowcase } from "@/components/fleet-showcase";
 import { HowItWorks } from "@/components/how-it-works";
 import { TrustBar } from "@/components/trust-bar";
-import { ActivityTicker } from "@/components/activity-ticker";
 import { Testimonials } from "@/components/testimonials";
-import { FactsPanel } from "@/components/facts-panel";
 import { ResortThumb } from "@/components/resort-thumb";
 import { RouteThumb } from "@/components/route-thumb";
-import { Gallery } from "@/components/gallery";
 import { AnimatedCounter } from "@/components/animated-counter";
 import { resorts } from "@/content/resorts";
 import { routes } from "@/content/routes";
+import { routeFromPrice } from "@/lib/route-pricing";
+import { company } from "@/config/company";
 import { events } from "@/content/events";
 import { articles } from "@/content/articles";
 import { drivers } from "@/content/drivers";
@@ -118,13 +116,15 @@ export default async function HomePage({
               </LinkButton>
             </div>
             <dl className="mt-10 grid w-full max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-6 text-small">
-              {publishedDrivers > 0 ? (
+              <Stat number={routes.length} label="Operating routes" />
+              <Stat number={resorts.length} label="Resorts covered" />
+              {company.publicStats.yearsOperating ? (
+                <Stat number={company.publicStats.yearsOperating} label="Years operating" />
+              ) : publishedDrivers > 0 ? (
                 <Stat number={publishedDrivers} label="Driver profiles" />
               ) : (
                 <Stat number={routes.filter((r) => r.requires4x4).length} label="4x4 routes" />
               )}
-              <Stat number={routes.length} label="Operating routes" />
-              <Stat number={resorts.length} label="Resorts covered" />
             </dl>
           </div>
 
@@ -133,9 +133,6 @@ export default async function HomePage({
           </div>
         </div>
       </section>
-
-      {/* Live activity ticker */}
-      <ActivityTicker />
 
       {/* Status board */}
       <section className="relative overflow-hidden border-b border-line bg-glacier py-14 text-snow">
@@ -162,11 +159,6 @@ export default async function HomePage({
       {/* How it works */}
       <HowItWorks />
 
-      {/* Fleet */}
-      <div className="border-t border-line bg-surface-raised">
-        <FleetShowcase />
-      </div>
-
       {/* Popular routes */}
       <section className="border-t border-line py-16">
         <div className="site-container">
@@ -181,9 +173,7 @@ export default async function HomePage({
           />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {routes.slice(0, 6).map((r, i) => {
-              const cheapest = Object.values(r.prices)
-                .filter((p): p is { priceGel: number; maxPax: number } => Boolean(p))
-                .sort((a, b) => a.priceGel - b.priceGel)[0];
+              const from = routeFromPrice(r);
               return (
                 <Link key={r.slug} href={`/transfers/${r.slug}` as never} className="gw-reveal group" style={{ animationDelay: `${i * 40}ms` }}>
                   <Card interactive className="flex h-full flex-col">
@@ -201,7 +191,12 @@ export default async function HomePage({
                       {r.description[l]}
                     </p>
                     <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
-                      {cheapest ? <Price gel={cheapest.priceGel} from /> : <span />}
+                      {from ? (
+                        <div className="flex items-baseline gap-1">
+                          <Price gel={from.priceGel} from />
+                          <span className="text-small text-ink-muted">{from.perSeat ? "/seat" : "/vehicle"}</span>
+                        </div>
+                      ) : <span />}
                       <span className="inline-flex items-center gap-1 text-small font-medium text-primary">
                         Book
                         <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-1">→</span>
@@ -259,16 +254,6 @@ export default async function HomePage({
           </div>
         </div>
       </section>
-
-      {/* Gallery — real photography */}
-      <div className="border-t border-line">
-        <Gallery />
-      </div>
-
-      {/* Facts, not slogans — real numbers only */}
-      <div className="border-y border-line bg-surface-raised">
-        <FactsPanel locale={l} />
-      </div>
 
       {/* Verified reviews — rendered only after real reviews exist */}
       {topReviews.length > 0 ? (

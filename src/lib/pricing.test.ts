@@ -9,6 +9,7 @@ const testRoute: Route = {
   to: { en: "Gudauri", ru: "Gudauri", ka: "Gudauri" },
   toSlug: "gudauri",
   toResort: "gudauri",
+  region: "from-airports",
   distanceKm: 140,
   durationMin: 150,
   requires4x4: false,

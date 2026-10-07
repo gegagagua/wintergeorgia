@@ -44,6 +44,7 @@ export function pageMetadata({
       url: canonical,
       siteName: "georgiawinter",
       locale,
+      alternateLocale: routing.locales.filter((l) => l !== locale),
       type: "website",
       images: [ogUrl],
     },

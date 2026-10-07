@@ -13,12 +13,13 @@ import { findRoute } from "@/content/routes";
 import { RelatedStrip } from "@/components/related-strip";
 import { relatedForArticle } from "@/lib/related";
 import { pageMetadata } from "@/lib/metadata";
-import { breadcrumbLd, newsArticleLd, faqLd } from "@/lib/jsonld";
+import { breadcrumbLd, newsArticleLd, faqLd, qaPageLd } from "@/lib/jsonld";
 import type { Locale } from "@/i18n/routing";
 import type { Article } from "@/content/types";
 
 export function generateStaticParams() {
-  return articles.map((a) => ({ slug: a.slug }));
+  // Q&A pages live under /answers; their /journal URLs 301-redirect.
+  return articles.filter((a) => a.template !== "qa").map((a) => ({ slug: a.slug }));
 }
 
 export async function generateMetadata({
@@ -76,15 +77,27 @@ export default async function ArticlePage({
               { name: "Journal", path: "/journal" },
               { name: a.title[l], path: `/journal/${a.slug}` },
             ]),
-            newsArticleLd({
-              locale: l,
-              slug: a.slug,
-              headline: a.title[l],
-              description: a.excerpt[l],
-              datePublished: a.publishedAt,
-              author: a.author,
-            }),
-            ...(a.faqs && a.faqs.length > 0
+            a.template === "qa" && a.oneSentenceAnswer
+              ? qaPageLd({
+                  locale: l,
+                  slug: a.slug,
+                  headline: a.title[l],
+                  answer: a.oneSentenceAnswer[l],
+                  faqs: (a.faqs ?? []).map((f) => ({ q: f.q[l], a: f.a[l] })),
+                  dateModified: a.updatedAt ?? a.publishedAt,
+                  author: a.author,
+                  pathPrefix: "journal",
+                })
+              : newsArticleLd({
+                  locale: l,
+                  slug: a.slug,
+                  headline: a.title[l],
+                  description: a.excerpt[l],
+                  datePublished: a.publishedAt,
+                  dateModified: a.updatedAt ?? a.publishedAt,
+                  author: a.author,
+                }),
+            ...(a.faqs && a.faqs.length > 0 && a.template !== "qa"
               ? [faqLd(a.faqs.map((f) => ({ q: f.q[l], a: f.a[l] })))]
               : []),
           ]),
@@ -109,11 +122,22 @@ export default async function ArticlePage({
               </span>
             ) : null}
             <span className="ml-auto tabular text-ink-muted">
-              {fmt.dateTime(new Date(a.publishedAt), {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
+              {template === "qa" ? (
+                <>
+                  <span className="text-ink-muted">Updated </span>
+                  {fmt.dateTime(new Date(a.updatedAt ?? a.publishedAt), {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </>
+              ) : (
+                fmt.dateTime(new Date(a.publishedAt), {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })
+              )}
             </span>
           </div>
           <h1 className="mt-3 font-serif text-[40px] leading-[48px] md:text-[60px] md:leading-[64px]">

@@ -14,12 +14,15 @@ import { RelatedStrip } from "@/components/related-strip";
 import { relatedForRoute } from "@/lib/related";
 import { SeatAlertForm } from "@/components/seat-alert-form";
 import { findRoute, routes } from "@/content/routes";
-import { findResort } from "@/content/resorts";
+import { findResort, resorts } from "@/content/resorts";
+import { ResortMap } from "@/components/resort-map";
 import { driversForRoute } from "@/content/drivers";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { pageMetadata } from "@/lib/metadata";
 import { breadcrumbLd, faqLd, productWithOfferLd } from "@/lib/jsonld";
+import { routeFromPrice, sortedVehicleClasses, vehicleClassLabel } from "@/lib/route-pricing";
+import { faqsForRoute } from "@/content/route-faqs";
 import type { Locale } from "@/i18n/routing";
 
 export function generateStaticParams() {
@@ -35,12 +38,18 @@ export async function generateMetadata({
   const l = locale as Locale;
   const r = findRoute(slug);
   if (!r) return {};
+  const from = routeFromPrice(r);
+  const fromLabel = from
+    ? ` — from ${from.priceGel} GEL${from.perSeat ? "/seat" : ""}`
+    : "";
   return pageMetadata({
     locale: l,
     path: `/transfers/${slug}`,
-    title: `${r.from[l]} → ${r.to[l]} transfer — fixed price`,
+    title: `${r.from[l]} → ${r.to[l]} transfer${fromLabel}`,
     description: r.description[l].slice(0, 160),
-    ogKicker: `${r.distanceKm} km · ${Math.round(r.durationMin / 60 * 10) / 10}h`,
+    ogKicker: from
+      ? `${r.distanceKm} km · ${Math.round(r.durationMin / 60 * 10) / 10}h · from ${from.priceGel} ₾${from.perSeat ? "/seat" : ""}`
+      : `${r.distanceKm} km · ${Math.round(r.durationMin / 60 * 10) / 10}h`,
     ogTitle: `${r.from[l]} → ${r.to[l]}`,
   });
 }
@@ -57,9 +66,8 @@ export default async function RoutePage({
   if (!r) notFound();
   const resort = r.toResort ? findResort(r.toResort) : undefined;
 
-  const cheapest = Object.values(r.prices)
-    .filter((p): p is { priceGel: number; maxPax: number } => Boolean(p))
-    .sort((a, b) => a.priceGel - b.priceGel)[0];
+  const fromPrice = routeFromPrice(r);
+  const orderedPrices = sortedVehicleClasses(r);
   const routeDrivers = driversForRoute(r.slug).slice(0, 4);
 
   return (
@@ -78,15 +86,10 @@ export default async function RoutePage({
               slug: r.slug,
               name: `${r.from[l]} → ${r.to[l]} transfer`,
               description: r.description[l],
-              priceGel: cheapest?.priceGel ?? 0,
+              priceGel: fromPrice?.priceGel ?? 0,
               ratingCount: 48,
             }),
-            faqLd([
-              { q: "Is this price the final price?", a: "Yes. No dynamic pricing. Extras and return leg are shown before payment." },
-              { q: "What if the road closes?", a: "Your booking is automatically rescheduled or refunded in full, no fee." },
-              { q: "When do I get the driver's details?", a: "Twelve hours before pickup by WhatsApp: name, phone, vehicle and plate." },
-              { q: "Cancellation policy?", a: "Free ≥24h before departure. 50% within 24h. Flight delays are never penalised." },
-            ]),
+            faqLd(faqsForRoute(r).map((f) => ({ q: f.q[l], a: f.a[l] }))),
           ]),
         }}
       />
@@ -120,7 +123,16 @@ export default async function RoutePage({
             </div>
             <aside className="rounded-lg border border-white/10 bg-glacier/60 p-5">
               <p className="text-small text-white/70">From</p>
-              <div className="mt-1">{cheapest ? <Price gel={cheapest.priceGel} size="lg" className="text-dawn-soft" /> : null}</div>
+              <div className="mt-1">
+                {fromPrice ? (
+                  <>
+                    <Price gel={fromPrice.priceGel} size="lg" className="text-dawn-soft" />
+                    <span className="ml-2 align-middle text-small text-white/70">
+                      {fromPrice.perSeat ? "per seat · shared" : `per vehicle · up to ${fromPrice.maxPax} pax`}
+                    </span>
+                  </>
+                ) : null}
+              </div>
               <p className="mt-2 text-small text-white/70">Fixed price · refund if road closes</p>
               <ul className="mt-4 grid gap-2 text-small text-white/80">
                 <li>· Vetted driver with winter tyres and chains</li>
@@ -153,17 +165,15 @@ export default async function RoutePage({
                 <Table>
                   <THead><TR><TH>Class</TH><TH align="right">Max pax</TH><TH align="right">Price</TH></TR></THead>
                   <tbody>
-                    {Object.entries(r.prices).map(([vc, meta]) => {
-                      if (!meta) return null;
-                      const label = vc === "shared" ? "Shared seat" : vc === "sedan" ? "Sedan" : vc === "minivan" ? "Minivan" : "4x4 SUV";
-                      return (
-                        <TR key={vc}>
-                          <TD>{label}</TD>
-                          <TD align="right">{meta.maxPax}</TD>
-                          <TD align="right">{meta.priceGel} ₾{vc === "shared" ? " / seat" : ""}</TD>
-                        </TR>
-                      );
-                    })}
+                    {orderedPrices.map(([vc, meta]) => (
+                      <TR key={vc}>
+                        <TD>{vehicleClassLabel(vc)}</TD>
+                        <TD align="right">{meta.maxPax}</TD>
+                        <TD align="right">
+                          {meta.priceGel} ₾{vc === "shared" ? " / seat" : ""}
+                        </TD>
+                      </TR>
+                    ))}
                   </tbody>
                 </Table>
               </div>
@@ -238,6 +248,77 @@ export default async function RoutePage({
               </div>
             </div>
           </aside>
+        </div>
+      </section>
+
+      {r.schedule && r.schedule.length > 0 ? (
+        <section className="border-t border-line">
+          <div className="site-container py-12">
+            <h2 className="font-serif text-[28px] leading-[36px]">Daily schedule</h2>
+            <p className="mt-2 text-small text-ink-muted">
+              Shared-seat shuttle. Reserve a seat on this page; private whole-vehicle rides depart on your schedule.
+            </p>
+            <div className="mt-5 overflow-hidden rounded-lg border border-line">
+              <Table>
+                <THead>
+                  <TR>
+                    <TH>Departure</TH>
+                    <TH>Return</TH>
+                    <TH>Runs</TH>
+                    <TH align="right">Seat price</TH>
+                  </TR>
+                </THead>
+                <tbody>
+                  {r.schedule.map((row, i) => (
+                    <TR key={i}>
+                      <TD className="tabular">{row.departTime}</TD>
+                      <TD className="tabular">{row.returnTime ?? "—"}</TD>
+                      <TD>{row.runsDaily ? "Daily" : row.note?.[l] ?? "On demand"}</TD>
+                      <TD align="right" className="tabular">
+                        {r.prices.shared ? `${r.prices.shared.priceGel} ₾` : "—"}
+                      </TD>
+                    </TR>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Winter road paragraph + map */}
+      <section className="border-t border-line bg-surface">
+        <div className="site-container py-12 grid gap-6 md:grid-cols-[1.4fr_1fr]">
+          <div>
+            <h2 className="font-serif text-[28px] leading-[36px]">What the road is like in winter</h2>
+            <p className="mt-4 text-ink">{r.description[l]}</p>
+            <p className="mt-3 text-small text-ink-muted">
+              Distance: {r.distanceKm} km · Typical winter time: {Math.round(r.durationMin / 15) * 15 / 60}h.
+              {r.requires4x4 ? " 4x4 recommended through the pass; chains fitted whenever the Roads Department posts the sign." : " Winter tyres and chains on every vehicle; chains fitted whenever the Roads Department posts the sign."}
+            </p>
+          </div>
+          <div>
+            {(() => {
+              const r2 = r.toResort ? resorts.find((x) => x.slug === r.toResort) : undefined;
+              return r2 ? (
+                <ResortMap lat={r2.lat} lng={r2.lng} label={`${r.from[l]} → ${r.to[l]}`} zoom={9} />
+              ) : null;
+            })()}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-line bg-surface-raised">
+        <div className="site-container py-14">
+          <h2 className="font-serif text-[28px] leading-[36px]">Questions people ask about this transfer</h2>
+          <dl className="mt-6 grid gap-3 md:grid-cols-2">
+            {faqsForRoute(r).map((f, i) => (
+              <div key={i} className="rounded-lg border border-line bg-surface p-5">
+                <dt className="font-medium text-ink">{f.q[l]}</dt>
+                <dd className="mt-2 text-small text-ink-muted">{f.a[l]}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 

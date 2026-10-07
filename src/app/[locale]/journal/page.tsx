@@ -25,14 +25,36 @@ export async function generateMetadata({
   return pageMetadata({ locale: l, path: "/journal", title: t.title, description: t.desc, ogKicker: "Journal" });
 }
 
-export default async function JournalIndex({ params }: { params: Promise<{ locale: string }> }) {
+export default async function JournalIndex({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams?: Promise<{ category?: string }>;
+}) {
   const { locale } = await params;
   const l = locale as Locale;
   setRequestLocale(l);
   const fmt = await getFormatter();
+  const resolved = (await (searchParams ?? Promise.resolve({}))) as { category?: string };
+  const q = resolved.category;
 
   const label = { en: "Journal", ru: "Журнал", ka: "ჟურნალი" }[l];
-  const sorted = [...articles].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+  // Journal keeps news and guides. Q&A pages live under /answers.
+  const nonQa = articles.filter((a) => a.template !== "qa");
+  const categoryLabels: Record<string, { en: string; ru: string; ka: string }> = {
+    news: { en: "News", ru: "Новости", ka: "ახალი ამბები" },
+    price: { en: "Prices", ru: "Цены", ka: "ფასები" },
+    alert: { en: "Alerts", ru: "Оповещения", ka: "გაფრთხილებები" },
+    infrastructure: { en: "Infrastructure", ru: "Инфраструктура", ka: "ინფრასტრუქტურა" },
+    event: { en: "Events", ru: "События", ka: "ღონისძიებები" },
+    guide: { en: "Guides", ru: "Гиды", ka: "გზამკვლევები" },
+  };
+  const activeCategory = typeof q === "string" ? q : "";
+  const categories = Array.from(new Set(nonQa.map((a) => a.category)));
+  const sorted = nonQa
+    .filter((a) => (activeCategory ? a.category === activeCategory : true))
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
   return (
     <div className="site-container py-10 md:py-14">
@@ -42,6 +64,24 @@ export default async function JournalIndex({ params }: { params: Promise<{ local
       />
       <Breadcrumb items={[{ name: "Home", path: "/" }, { name: label }]} />
       <SectionHeader kicker="Latest" title={label} />
+
+      <nav aria-label="Journal categories" className="mb-6 flex flex-wrap gap-2">
+        <Link
+          href="/journal"
+          className={`rounded-pill border px-3 py-1 text-small ${activeCategory === "" ? "border-primary bg-primary/10 text-primary" : "border-line bg-surface text-ink-muted hover:text-ink"}`}
+        >
+          {{ en: "All", ru: "Все", ka: "ყველა" }[l]}
+        </Link>
+        {categories.map((c) => (
+          <Link
+            key={c}
+            href={{ pathname: "/journal", query: { category: c } }}
+            className={`rounded-pill border px-3 py-1 text-small ${activeCategory === c ? "border-primary bg-primary/10 text-primary" : "border-line bg-surface text-ink-muted hover:text-ink"}`}
+          >
+            {categoryLabels[c]?.[l] ?? c}
+          </Link>
+        ))}
+      </nav>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {sorted.map((a) => (
@@ -55,7 +95,11 @@ export default async function JournalIndex({ params }: { params: Promise<{ local
                     Draft
                   </span>
                 ) : null}
-                <span className="ml-auto tabular text-ink-muted">{fmt.dateTime(new Date(a.publishedAt), { day: "numeric", month: "short" })}</span>
+                <span className="ml-auto tabular text-ink-muted">
+                  {a.template === "qa"
+                    ? `Updated ${fmt.dateTime(new Date(a.updatedAt ?? a.publishedAt), { day: "numeric", month: "short" })}`
+                    : fmt.dateTime(new Date(a.publishedAt), { day: "numeric", month: "short" })}
+                </span>
               </div>
               <h2 className="mt-2 font-serif text-[20px] leading-[28px] group-hover:text-primary">{a.title[l]}</h2>
               <p className="mt-2 line-clamp-3 text-small text-ink-muted">{a.excerpt[l]}</p>

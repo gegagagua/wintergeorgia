@@ -179,7 +179,9 @@ export function newsArticleLd({
   description,
   image,
   datePublished,
+  dateModified,
   author,
+  pathPrefix = "journal",
 }: {
   locale: Locale;
   slug: string;
@@ -187,7 +189,9 @@ export function newsArticleLd({
   description?: string;
   image?: string;
   datePublished: string;
+  dateModified?: string;
   author: string;
+  pathPrefix?: "journal" | "answers";
 }): Json {
   return {
     "@context": "https://schema.org",
@@ -196,14 +200,65 @@ export function newsArticleLd({
     description,
     image,
     datePublished,
-    dateModified: datePublished,
+    dateModified: dateModified ?? datePublished,
     author: { "@type": "Person", name: author },
     publisher: {
       "@type": "Organization",
       name: "georgiawinter",
       logo: { "@type": "ImageObject", url: `${siteUrl()}/favicon.svg` },
     },
-    mainEntityOfPage: localeUrl(locale, `/journal/${slug}`),
+    mainEntityOfPage: localeUrl(locale, `/${pathPrefix}/${slug}`),
+  };
+}
+
+/**
+ * QAPage schema for evergreen answer pages. The one-sentence answer is the
+ * acceptedAnswer. Follow-up FAQs attach as suggestedAnswer entries.
+ */
+export function qaPageLd({
+  locale,
+  slug,
+  headline,
+  answer,
+  faqs,
+  dateModified,
+  author,
+  pathPrefix = "answers",
+}: {
+  locale: Locale;
+  slug: string;
+  headline: string;
+  answer: string;
+  faqs?: { q: string; a: string }[];
+  dateModified: string;
+  author: string;
+  pathPrefix?: "journal" | "answers";
+}): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "QAPage",
+    mainEntity: {
+      "@type": "Question",
+      name: headline,
+      author: { "@type": "Person", name: author },
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: answer,
+        dateCreated: dateModified,
+        author: { "@type": "Organization", name: "georgiawinter" },
+      },
+      ...(faqs && faqs.length
+        ? {
+            suggestedAnswer: faqs.map((f) => ({
+              "@type": "Answer",
+              name: f.q,
+              text: f.a,
+            })),
+          }
+        : {}),
+    },
+    url: localeUrl(locale, `/${pathPrefix}/${slug}`),
+    dateModified,
   };
 }
 

@@ -11,12 +11,16 @@ import { PeakArt } from "@/components/peaks";
 import { Link } from "@/i18n/navigation";
 import { findResort, resorts } from "@/content/resorts";
 import { routes } from "@/content/routes";
+import { routeFromPrice } from "@/lib/route-pricing";
 import { events } from "@/content/events";
 import { articles } from "@/content/articles";
 import { places } from "@/content/places";
 import { findSnow } from "@/content/roads";
 import { prices } from "@/content/prices";
+import { seasonStateFor } from "@/config/season";
+import { SeasonAlertForm } from "@/components/season-alert-form";
 import { PhotoGallery } from "@/components/photo-gallery";
+import { ResortMap } from "@/components/resort-map";
 import { RelatedStrip } from "@/components/related-strip";
 import { relatedForResort } from "@/lib/related";
 import { pageMetadata } from "@/lib/metadata";
@@ -59,7 +63,8 @@ export default async function ResortPage({
   const r = findResort(slug);
   if (!r) notFound();
 
-  const snow = findSnow(r.slug);
+  const season = seasonStateFor(r);
+  const snow = season.state === "open" ? findSnow(r.slug) : null;
   const resortRoutes = routes.filter((rt) => rt.toResort === r.slug);
   const resortEvents = events.filter((e) => e.resort === r.slug);
   const resortArticles = articles.filter((a) => a.resort === r.slug);
@@ -147,8 +152,10 @@ export default async function ResortPage({
             </div>
 
             <aside className="rounded-lg border border-white/10 bg-glacier/60 p-5">
-              <p className="text-small text-white/70">Live at {r.name[l]}</p>
-              {snow ? (
+              <p className="text-small text-white/70">
+                {season.state === "open" ? `Live at ${r.name[l]}` : season.state === "preseason" ? "Preseason" : "Season closed"}
+              </p>
+              {season.state === "open" && snow ? (
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <Stat label="Top snow" value={`${snow.topCm} cm`} />
                   <Stat label="Base snow" value={`${snow.baseCm} cm`} />
@@ -157,8 +164,25 @@ export default async function ResortPage({
                   <Stat label="Lifts" value={`${snow.liftsOpen}/${snow.liftsTotal}`} />
                   <Stat label="Wind" value={`${snow.windMs} m/s`} />
                 </div>
+              ) : season.state === "preseason" ? (
+                <div className="mt-3">
+                  <p className="font-serif text-[22px] leading-[28px] text-snow">
+                    {season.daysToOpen === 0
+                      ? "Opens today"
+                      : season.daysToOpen === 1
+                        ? "Opens tomorrow"
+                        : `Opens in ${season.daysToOpen} days`}
+                  </p>
+                  <p className="mt-1 text-small text-white/70 tabular">
+                    {season.opensOn ? fmt.dateTime(new Date(season.opensOn), { day: "numeric", month: "long" }) : null}
+                  </p>
+                  <p className="mt-3 text-small text-white/60">Not measured yet. We start the hourly reading once the lifts turn.</p>
+                  <div className="mt-4">
+                    <SeasonAlertForm resort={r.slug} tone="dark" />
+                  </div>
+                </div>
               ) : (
-                <p className="mt-3 text-small text-white/70">No live data — backcountry area.</p>
+                <p className="mt-3 text-small text-white/70">Season closed. Back next winter.</p>
               )}
               <div className="mt-5 flex flex-col gap-2 sm:flex-row">
                 <LinkButton href="/transfers" variant="cta" className="flex-1 justify-center">Book a transfer</LinkButton>
@@ -269,6 +293,30 @@ export default async function ResortPage({
         </section>
       ) : null}
 
+      {/* Map + parking */}
+      <section className="site-container py-10">
+        <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
+          <div>
+            <h2 className="mb-4 font-serif text-[24px] leading-[32px]">On the map</h2>
+            <ResortMap lat={r.lat} lng={r.lng} label={r.name[l]} />
+          </div>
+          {r.parkingNote ? (
+            <aside className="rounded-lg border border-line bg-surface p-5">
+              <p className="text-small text-primary">Parking</p>
+              <p className="mt-2 text-ink">{r.parkingNote[l]}</p>
+            </aside>
+          ) : (
+            <aside className="rounded-lg border border-line bg-surface p-5">
+              <p className="text-small text-primary">Coordinates</p>
+              <p className="mt-2 tabular text-ink">{r.lat.toFixed(4)}, {r.lng.toFixed(4)}</p>
+              <p className="mt-2 text-small text-ink-muted">
+                Pin shows the base of the main lift. Hotels on the ridge are 300–800 m away.
+              </p>
+            </aside>
+          )}
+        </div>
+      </section>
+
       {/* Resort FAQ (owner-supplied in content/resorts.ts, rendered only when present) */}
       {r.faqs && r.faqs.length > 0 ? (
         <section className="site-container py-12">
@@ -295,13 +343,22 @@ export default async function ResortPage({
               </THead>
               <tbody>
                 {resortRoutes.map((rt) => {
-                  const cheapest = Object.values(rt.prices).filter((p): p is { priceGel: number; maxPax: number } => Boolean(p)).sort((a, b) => a.priceGel - b.priceGel)[0];
+                  const from = routeFromPrice(rt);
                   return (
                     <TR key={rt.slug}>
                       <TD>{rt.from[l]}</TD>
                       <TD align="right">{rt.distanceKm} km</TD>
                       <TD align="right">{Math.round(rt.durationMin / 15) * 15}m</TD>
-                      <TD align="right">{cheapest ? <Price gel={cheapest.priceGel} size="sm" /> : "—"}</TD>
+                      <TD align="right">
+                        {from ? (
+                          <>
+                            <Price gel={from.priceGel} size="sm" />
+                            <span className="ml-1 text-small text-ink-muted">
+                              {from.perSeat ? "/seat" : "/vehicle"}
+                            </span>
+                          </>
+                        ) : "—"}
+                      </TD>
                       <TD align="right">
                         <Link href={`/transfers/${rt.slug}` as never} className="text-small text-primary hover:underline">Book →</Link>
                       </TD>

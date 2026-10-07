@@ -23,7 +23,7 @@ const seedArticles: Article[] = [
     },
     category: "news",
     author: "georgiawinter editorial",
-    publishedAt: "2026-11-18T09:00:00Z",
+    publishedAt: "2026-10-06T09:00:00Z",
     resort: "gudauri",
   },
   {
@@ -46,7 +46,7 @@ const seedArticles: Article[] = [
     },
     category: "price",
     author: "georgiawinter editorial",
-    publishedAt: "2026-11-05T09:00:00Z",
+    publishedAt: "2026-09-24T09:00:00Z",
   },
   {
     slug: "first-time-on-skis-where-to-start",
@@ -96,6 +96,27 @@ const seedArticles: Article[] = [
   },
 ];
 
-export const articles: Article[] = [...seedArticles, ...contentPages].sort(
-  (a, b) => (a.publishedAt < b.publishedAt ? 1 : -1),
+/**
+ * Hard rule: a published article cannot carry a future publishedAt. The CMS
+ * will enforce this at save time; this check guards the TS-authored seed
+ * data at build time.
+ */
+function assertNoFuturePublishDates(list: Article[], now = new Date()): void {
+  const future = list.filter(
+    (a) => !a.draft && new Date(a.publishedAt).getTime() > now.getTime(),
+  );
+  if (future.length > 0) {
+    const slugs = future.map((a) => a.slug).join(", ");
+    throw new Error(
+      `Article(s) have a future publishedAt and are not marked draft: ${slugs}. ` +
+        `Backdate or set draft: true. See docs/03-seo.md.`,
+    );
+  }
+}
+
+const allArticles = [...seedArticles, ...contentPages];
+assertNoFuturePublishDates(allArticles);
+
+export const articles: Article[] = allArticles.sort((a, b) =>
+  a.publishedAt < b.publishedAt ? 1 : -1,
 );
