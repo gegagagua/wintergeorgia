@@ -14,7 +14,6 @@ import { createTheme } from "@mui/material/styles";
 const t = (name: string) => `var(--${name})`;
 
 export const muiTheme = createTheme({
-  // CSS variable-driven palette so dark/light flips with [data-theme].
   cssVariables: {
     cssVarPrefix: "mui",
     colorSchemeSelector: "data-theme",
@@ -32,7 +31,7 @@ export const muiTheme = createTheme({
           main: "#D98436",
           dark: "#B86921",
           light: "#F2A65A",
-          contrastText: "#0E1620",
+          contrastText: "#FFFFFF",
         },
         error: { main: "#C0392F" },
         warning: { main: "#B8860B" },
@@ -87,24 +86,61 @@ export const muiTheme = createTheme({
     h4: { fontWeight: 600, fontSize: 20, lineHeight: "28px" },
     body1: { fontSize: 17, lineHeight: "28px" },
     body2: { fontSize: 13, lineHeight: "20px" },
-    button: { fontWeight: 500, textTransform: "none" },
+    button: { fontWeight: 500, textTransform: "none", letterSpacing: 0 },
   },
   shape: {
-    // design-tokens.css: cards/tables are 14, inputs are 6. MUI uses a single
-    // base; set the input radius and override cards per-component.
     borderRadius: 6,
   },
   components: {
     MuiButton: {
-      defaultProps: { disableElevation: true },
+      defaultProps: { disableElevation: true, variant: "contained" },
       styleOverrides: {
         root: {
-          borderRadius: 6,
-          paddingInline: 20,
-          minHeight: 44,
+          borderRadius: 8,
           fontWeight: 500,
+          letterSpacing: 0,
+        },
+        sizeSmall: {
+          minHeight: 36,
+          paddingInline: 14,
+          fontSize: 13,
+        },
+        sizeMedium: {
+          minHeight: 44,
+          paddingInline: 20,
+          fontSize: 14,
+        },
+        sizeLarge: {
+          minHeight: 48,
+          paddingInline: 24,
+          fontSize: 15,
         },
       },
+      variants: [
+        {
+          props: { variant: "outlined", color: "primary" },
+          style: {
+            borderColor: t("line"),
+            color: t("ink"),
+            backgroundColor: t("surface"),
+            "&:hover": {
+              borderColor: t("primary"),
+              backgroundColor: t("surface-raised"),
+              color: t("primary"),
+            },
+          },
+        },
+        {
+          props: { variant: "text", color: "primary" },
+          style: {
+            color: t("ink"),
+            "&:hover": {
+              backgroundColor: t("surface-raised"),
+              color: t("primary"),
+            },
+          },
+        },
+      ],
     },
     MuiTextField: {
       defaultProps: { variant: "outlined", size: "small" },
@@ -114,9 +150,20 @@ export const muiTheme = createTheme({
             borderRadius: 6,
             backgroundColor: t("surface"),
           },
+          "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: t("ink-muted"),
+          },
           "& .MuiOutlinedInput-notchedOutline": { borderColor: t("line") },
-          "& .MuiInputBase-input": { color: t("ink") },
+          "& .MuiInputBase-input": { color: t("ink"), fontSize: 15 },
           "& .MuiInputLabel-root": { color: t("ink-muted") },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: 6,
+          backgroundColor: t("surface"),
         },
       },
     },
@@ -137,7 +184,7 @@ export const muiTheme = createTheme({
     },
     MuiChip: {
       styleOverrides: {
-        root: { borderRadius: 999, fontWeight: 500 },
+        root: { borderRadius: 999, fontWeight: 500, letterSpacing: 0 },
       },
     },
     MuiLink: {
@@ -148,6 +195,17 @@ export const muiTheme = createTheme({
     },
     MuiDivider: {
       styleOverrides: { root: { borderColor: t("line") } },
+    },
+    MuiFormHelperText: {
+      styleOverrides: {
+        root: { fontSize: 13, color: t("ink-muted"), marginLeft: 0 },
+      },
+    },
+    MuiCheckbox: {
+      defaultProps: { size: "small" },
+    },
+    MuiRadio: {
+      defaultProps: { size: "small" },
     },
   },
 });

@@ -1,20 +1,23 @@
-import type { ComponentProps, ReactNode } from "react";
+"use client";
+
+import Chip, { type ChipProps } from "@mui/material/Chip";
+import type { ComponentProps, ReactElement, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 type Tone = "neutral" | "primary" | "accent" | "muted" | "glass";
 type Size = "sm" | "md";
 
-const tones: Record<Tone, string> = {
-  neutral: "border border-line bg-surface text-ink",
-  primary: "border border-primary/25 bg-primary/[0.08] text-primary",
-  accent: "border border-accent/30 bg-accent/[0.10] text-accent",
-  muted: "border border-line bg-surface-raised text-ink-muted",
-  glass: "border border-white/15 bg-white/10 text-white backdrop-blur",
+const toneClass: Record<Tone, string> = {
+  neutral: "!border !border-line !bg-surface !text-ink",
+  primary: "!border !border-primary/25 !bg-primary/[0.08] !text-primary",
+  accent: "!border !border-accent/30 !bg-accent/[0.10] !text-accent",
+  muted: "!border !border-line !bg-surface-raised !text-ink-muted",
+  glass: "!border !border-white/15 !bg-white/10 !text-white backdrop-blur",
 };
 
-const sizes: Record<Size, string> = {
-  sm: "h-6 gap-1.5 px-2.5 text-[12px]",
-  md: "h-7 gap-2 px-3 text-small",
+const sizeClass: Record<Size, string> = {
+  sm: "!h-6 !text-[12px] [&_.MuiChip-label]:!px-2.5 [&_.MuiChip-icon]:!ml-1.5",
+  md: "!h-7 !text-[13px] [&_.MuiChip-label]:!px-3 [&_.MuiChip-icon]:!ml-1.5",
 };
 
 export function Badge({
@@ -28,20 +31,19 @@ export function Badge({
   tone?: Tone;
   size?: Size;
   children: ReactNode;
-  icon?: ReactNode;
+  icon?: ReactElement;
 } & Omit<ComponentProps<"span">, "children">) {
   return (
-    <span
+    <Chip
+      label={children}
+      icon={icon}
       className={cn(
-        "inline-flex items-center rounded-pill font-medium tabular leading-none whitespace-nowrap",
-        tones[tone],
-        sizes[size],
+        "!rounded-full !font-medium !tracking-normal whitespace-nowrap",
+        toneClass[tone],
+        sizeClass[size],
         className,
       )}
-      {...rest}
-    >
-      {icon}
-      {children}
-    </span>
+      {...(rest as Omit<ChipProps, "label" | "icon">)}
+    />
   );
 }
