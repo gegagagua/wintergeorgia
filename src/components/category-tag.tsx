@@ -38,12 +38,12 @@ export function CategoryTag({ tone, children, className }: { tone: string; child
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-pill border px-2 py-0.5 text-small tabular",
+        "inline-flex items-center gap-1 rounded-pill border px-1.5 py-[1px] text-[11px] leading-[14px] tabular",
         cls,
         className,
       )}
     >
-      <span aria-hidden="true" className="inline-block h-1 w-1 rounded-full bg-current opacity-60" />
+      <span aria-hidden="true" className="inline-block h-[3px] w-[3px] rounded-full bg-current opacity-60" />
       {children}
     </span>
   );

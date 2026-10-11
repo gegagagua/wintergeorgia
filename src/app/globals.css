@@ -222,6 +222,15 @@
   .site-container { padding-inline: var(--space-6); }
 }
 
+/* Hide scrollbar on horizontal sliders while keeping it scrollable */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Topographic contour panel used when no real photo exists. */
 .contour {
   background-image:

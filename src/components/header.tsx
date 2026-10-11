@@ -6,6 +6,8 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
 import { MobileNav } from "./mobile-nav";
 import { ConditionsBar } from "./conditions-bar";
+import { LinkButton } from "./ui/button";
+import { PrimaryNav } from "./primary-nav";
 
 export async function Header() {
   const t = await getTranslations("nav");
@@ -22,40 +24,15 @@ export async function Header() {
             <LogoLockup />
           </Link>
 
-          <nav
-            className="ml-auto hidden items-center gap-6 text-small md:flex"
-            aria-label="Primary"
-          >
-            <Link className="text-ink hover:text-primary" href="/transfers">
-              {t("transfers")}
-            </Link>
-            <Link className="text-ink hover:text-primary" href="/resorts">
-              {t("resorts")}
-            </Link>
-            <Link className="text-ink hover:text-primary" href="/road-status">
-              {t("conditions")}
-            </Link>
-            <Link className="text-ink hover:text-primary" href="/things-to-do">
-              {t("thingsToDo")}
-            </Link>
-            <Link className="text-ink hover:text-primary" href="/events">
-              {t("events")}
-            </Link>
-            <Link className="text-ink hover:text-primary" href="/journal">
-              {t("journal")}
-            </Link>
-          </nav>
+          <PrimaryNav />
 
-          <div className="ml-auto flex items-center gap-2 md:ml-0 md:gap-3">
+          <div className="ml-auto flex items-center gap-2 lg:ml-0 lg:gap-3">
             <LocaleSwitcher />
             <ThemeToggle />
-            <Link
-              href="/transfers"
-              className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-sm bg-accent px-3 text-small font-medium text-white transition-[filter] duration-150 hover:brightness-95 md:px-4"
-            >
-              <span className="hidden md:inline">{t("bookTransfer")}</span>
-              <span className="md:hidden">Book</span>
-            </Link>
+            <LinkButton href="/transfers" variant="cta" size="sm">
+              <span className="hidden lg:inline">{t("bookTransfer")}</span>
+              <span className="lg:hidden">Book</span>
+            </LinkButton>
             <MobileNav />
           </div>
         </div>

@@ -87,7 +87,7 @@ export default async function HomePage({
       <section className="relative overflow-hidden bg-glacier text-snow">
         <HeroScene className="pointer-events-none absolute inset-0 h-full w-full text-snow" />
         <Snowflakes count={28} />
-        <div className="relative site-container grid gap-10 py-16 md:grid-cols-[1.15fr_1fr] md:py-24 lg:py-28">
+        <div className="relative site-container grid gap-8 py-12 md:grid-cols-[1.15fr_1fr] md:py-12 lg:py-20">
           <div>
             <p className="inline-flex items-center gap-2 rounded-pill border border-white/15 bg-white/5 px-3 py-1 text-small tabular text-dawn-soft backdrop-blur">
               <span aria-hidden="true" className="relative flex h-2 w-2">
@@ -96,34 +96,29 @@ export default async function HomePage({
               </span>
               {t("heroKicker")}
             </p>
-            <h1 className="mt-4 max-w-[16ch] font-serif text-[46px] leading-[1.03] md:text-[68px] md:leading-[1.02] lg:text-[80px]">
+            <h1 className="mt-3 max-w-[18ch] font-serif text-[34px] leading-[1.08] md:text-[46px] md:leading-[1.05] lg:text-[56px]">
               {t("heroTitle")}
             </h1>
-            <p className="mt-6 max-w-[54ch] text-[17px] leading-[1.65] text-white/80">
+            <p className="mt-4 max-w-[54ch] text-[15px] leading-[1.6] text-white/80 md:text-[16px]">
               {t("heroBody")}
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <LinkButton href="/transfers" variant="cta" size="lg" arrow>
                 {t("ctaBook")}
               </LinkButton>
-              <LinkButton
-                href="/road-status"
-                variant="outline"
-                size="lg"
-                className="border-white/25 bg-white/5 text-snow backdrop-blur hover:border-dawn-soft hover:bg-white/10"
-              >
+              <LinkButton href="/snow-report" variant="outline" size="lg" tone="dark" arrow>
                 {t("ctaConditions")}
               </LinkButton>
             </div>
-            <dl className="mt-10 grid w-full max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-6 text-small">
-              <Stat number={routes.length} label="Operating routes" />
-              <Stat number={resorts.length} label="Resorts covered" />
+            <dl className="mt-8 grid w-full max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-5 text-small">
+              <Stat number={routes.length} label={t("statsOperatingRoutes")} />
+              <Stat number={resorts.length} label={t("statsResortsCovered")} />
               {company.publicStats.yearsOperating ? (
-                <Stat number={company.publicStats.yearsOperating} label="Years operating" />
+                <Stat number={company.publicStats.yearsOperating} label={t("statsYearsOperating")} />
               ) : publishedDrivers > 0 ? (
-                <Stat number={publishedDrivers} label="Driver profiles" />
+                <Stat number={publishedDrivers} label={t("statsDriverProfiles")} />
               ) : (
-                <Stat number={routes.filter((r) => r.requires4x4).length} label="4x4 routes" />
+                <Stat number={routes.filter((r) => r.requires4x4).length} label={t("stats4x4Routes")} />
               )}
             </dl>
           </div>
@@ -140,13 +135,13 @@ export default async function HomePage({
         <div className="relative site-container">
           <div className="mb-6 flex items-baseline justify-between gap-4">
             <div>
-              <p className="text-small text-dawn-soft">Live board</p>
+              <p className="text-small text-dawn-soft">{t("liveBoardKicker")}</p>
               <h2 className="mt-1 font-serif text-[28px] leading-[36px] md:text-[32px] md:leading-[40px]">
-                Right now on the mountains
+                {t("liveBoardTitle")}
               </h2>
             </div>
             <div className="hidden text-small text-white/50 sm:block">
-              4 roads · 6 resorts · auto-refresh 15 min
+              {t("liveBoardMeta")}
             </div>
           </div>
           <StatusBoard locale={l} tone="dark" />
@@ -160,14 +155,14 @@ export default async function HomePage({
       <HowItWorks />
 
       {/* Popular routes */}
-      <section className="border-t border-line py-16">
+      <section className="border-t border-line py-12">
         <div className="site-container">
           <SectionHeader
-            kicker="Bookings"
-            title="Popular transfer routes"
+            kicker={t("sectionBookingsKicker")}
+            title={t("sectionBookingsTitle")}
             action={
               <LinkButton href="/transfers" variant="ghost" size="sm" arrow>
-                All routes
+                {t("allRoutes")}
               </LinkButton>
             }
           />
@@ -187,18 +182,18 @@ export default async function HomePage({
                     <h3 className="mt-1 font-serif text-[20px] leading-[28px] group-hover:text-primary">
                       {r.from[l]} → {r.to[l]}
                     </h3>
-                    <p className="mt-2 line-clamp-2 flex-1 text-small text-ink-muted">
+                    <p className="mt-2 line-clamp-2 flex-1 text-small leading-[1.5] text-ink-muted">
                       {r.description[l]}
                     </p>
                     <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
                       {from ? (
                         <div className="flex items-baseline gap-1">
                           <Price gel={from.priceGel} from />
-                          <span className="text-small text-ink-muted">{from.perSeat ? "/seat" : "/vehicle"}</span>
+                          <span className="text-small text-ink-muted">{from.perSeat ? t("perSeat") : t("perVehicle")}</span>
                         </div>
                       ) : <span />}
                       <span className="inline-flex items-center gap-1 text-small font-medium text-primary">
-                        Book
+                        {t("bookAction")}
                         <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-1">→</span>
                       </span>
                     </div>
@@ -211,11 +206,11 @@ export default async function HomePage({
       </section>
 
       {/* Resorts */}
-      <section className="border-t border-line bg-surface-raised py-16">
+      <section className="border-t border-line bg-surface-raised py-12">
         <div className="site-container">
           <SectionHeader
-            kicker="Six resorts"
-            title="Where to ski in Georgia"
+            kicker={t("sectionResortsKicker")}
+            title={t("sectionResortsTitle")}
             action={
               <LinkButton href="/resorts" variant="ghost" size="sm" arrow>
                 {tn("resorts")}
@@ -229,23 +224,23 @@ export default async function HomePage({
                   <ResortThumb slug={r.slug} />
                   <div className="mt-4 flex items-center gap-2 text-small">
                     <span className="text-primary">{r.region}</span>
-                    {!r.isLiftResort ? <CategoryTag tone="alert">Backcountry</CategoryTag> : null}
+                    {!r.isLiftResort ? <CategoryTag tone="alert">{t("backcountry")}</CategoryTag> : null}
                   </div>
                   <h3 className="mt-1 font-serif text-[24px] leading-[30px] group-hover:text-primary">
                     {r.name[l]}
                   </h3>
-                  <p className="mt-2 line-clamp-3 flex-1 text-small text-ink-muted">
+                  <p className="mt-2 line-clamp-3 flex-1 text-small leading-[1.5] text-ink-muted">
                     {r.description[l]}
                   </p>
                   <dl className="mt-4 flex items-center gap-5 border-t border-line pt-4 text-small text-ink-muted">
                     <div>
-                      <dt className="sr-only">Altitude</dt>
-                      <dd className="tabular">{r.altMinM}–{r.altMaxM} m</dd>
+                      <dt className="sr-only">{t("altitude")}</dt>
+                      <dd className="tabular">{t("altitudeRange", { min: r.altMinM, max: r.altMaxM })}</dd>
                     </div>
                     <span aria-hidden="true" className="text-line">|</span>
                     <div>
-                      <dt className="sr-only">Lifts</dt>
-                      <dd className="tabular">{r.liftsTotal} lifts</dd>
+                      <dt className="sr-only">{t("lifts")}</dt>
+                      <dd className="tabular">{t("liftsCount", { n: r.liftsTotal })}</dd>
                     </div>
                   </dl>
                 </Card>
@@ -263,10 +258,10 @@ export default async function HomePage({
       ) : null}
 
       {/* Events */}
-      <section className="site-container py-16">
+      <section className="site-container py-12">
         <SectionHeader
-          kicker="This season"
-          title="Featured events"
+          kicker={t("sectionEventsKicker")}
+          title={t("sectionEventsTitle")}
           action={
             <LinkButton href="/events" variant="ghost" size="sm" arrow>
               {tn("events")}
@@ -290,11 +285,11 @@ export default async function HomePage({
                 <h3 className="mt-2 font-serif text-[24px] leading-[30px] group-hover:text-primary">
                   {e.title[l]}
                 </h3>
-                <p className="mt-2 line-clamp-2 flex-1 text-small text-ink-muted">
+                <p className="mt-2 line-clamp-2 flex-1 text-small leading-[1.5] text-ink-muted">
                   {e.body[l]}
                 </p>
                 <div className="mt-4 border-t border-line pt-4 text-small font-medium text-primary">
-                  Event page →
+                  {t("eventPage")}
                 </div>
               </Card>
             </Link>
@@ -303,11 +298,11 @@ export default async function HomePage({
       </section>
 
       {/* Journal */}
-      <section className="border-t border-line bg-surface-raised py-16">
+      <section className="border-t border-line bg-surface-raised py-12">
         <div className="site-container">
           <SectionHeader
-            kicker="Latest"
-            title="From the journal"
+            kicker={t("sectionNewsKicker")}
+            title={t("sectionNewsTitle")}
             action={
               <LinkButton href="/journal" variant="ghost" size="sm" arrow>
                 {tn("journal")}
@@ -320,12 +315,12 @@ export default async function HomePage({
                 <Card interactive className="flex h-full flex-col">
                   <div className="flex items-center gap-2 text-small">
                     <CategoryTag tone={a.category}>{a.category}</CategoryTag>
-                    {a.isAlert ? <StatusPill status="closed" label="Alert" /> : null}
+                    {a.isAlert ? <StatusPill status="closed" label={t("alert")} /> : null}
                   </div>
                   <h3 className="mt-2 font-serif text-[20px] leading-[28px] group-hover:text-primary">
                     {a.title[l]}
                   </h3>
-                  <p className="mt-2 line-clamp-3 flex-1 text-small text-ink-muted">
+                  <p className="mt-2 line-clamp-3 flex-1 text-small leading-[1.5] text-ink-muted">
                     {a.excerpt[l]}
                   </p>
                 </Card>
@@ -341,11 +336,11 @@ export default async function HomePage({
           variant="compact"
           className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] w-full text-snow"
         />
-        <div className="relative site-container grid gap-10 py-16 md:grid-cols-2 md:py-20">
+        <div className="relative site-container grid gap-10 py-12 md:grid-cols-2 md:py-20">
           <div>
-            <p className="text-small text-dawn-soft">Ready?</p>
+            <p className="text-small text-dawn-soft">{t("readyKicker")}</p>
             <h2 className="mt-2 font-serif text-[32px] leading-[1.1] md:text-[44px]">
-              Book the transfer. Fixed price. Refund if the road closes.
+              {t("readyTitle")}
             </h2>
             <div className="mt-6">
               <LinkButton href="/transfers" variant="cta" size="lg" arrow>
@@ -354,15 +349,15 @@ export default async function HomePage({
             </div>
           </div>
           <div>
-            <p className="text-small text-dawn-soft">Weekly bulletin</p>
+            <p className="text-small text-dawn-soft">{t("bulletinKicker")}</p>
             <h2 className="mt-2 font-serif text-[24px] leading-[1.2] md:text-[28px]">
-              One email each Friday. Snow, roads, and what is on this weekend.
+              {t("bulletinTitle")}
             </h2>
             <div className="mt-5">
               <SubscribeForm />
             </div>
             <p className="mt-3 text-small text-white/55">
-              No cookies. No cross-tracking. Unsubscribe any time.
+              {t("bulletinPrivacy")}
             </p>
           </div>
         </div>

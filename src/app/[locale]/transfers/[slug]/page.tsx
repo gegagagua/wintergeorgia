@@ -244,7 +244,7 @@ export default async function RoutePage({
               </div>
               <p className="mt-2 text-small text-ink-muted">Chains required above Kobi.</p>
               <div className="mt-4">
-                <LinkButton href="/road-status" variant="outline" size="sm">Road status →</LinkButton>
+                <LinkButton href="/snow-report" variant="outline" size="sm">Snow report →</LinkButton>
               </div>
             </div>
           </aside>

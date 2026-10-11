@@ -46,6 +46,13 @@ export type TerrainSplit = {
   advanced?: number;
 };
 
+export type ResortVideo = {
+  /** YouTube video ID (e.g., "dQw4w9WgXcQ" from https://youtube.com/watch?v=dQw4w9WgXcQ) */
+  youtubeId: string;
+  title: I18n;
+  description?: I18n;
+};
+
 export type Resort = {
   slug: ResortSlug;
   name: I18n;
@@ -73,6 +80,15 @@ export type Resort = {
   webcams?: Array<{ name: string; url: string; attribution?: string }>;
   parkingNote?: I18n;
   faqs?: Array<{ q: I18n; a: I18n }>;
+  videos?: ResortVideo[];
+  /** Short "best time to visit" paragraph by month-range. */
+  bestTime?: I18n;
+  /** Après-ski + food scene snapshot. */
+  apresSki?: I18n;
+  /** Gear & conditions tips (what to pack, snow quality notes). */
+  gearTips?: I18n;
+  /** Nearby towns / villages worth a detour. */
+  nearbyTowns?: I18n;
 };
 
 export type RouteRegion =

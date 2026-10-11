@@ -74,7 +74,7 @@ export default async function ConfirmationPage({
             <div className="mt-1"><Price gel={b.amountGel} size="lg" /></div>
             <p className="mt-2 text-small text-ink-muted">Cancellation: free ≥24h before departure.</p>
           </section>
-          <LinkButton href="/road-status" variant="outline" className="w-full justify-center">Live road status</LinkButton>
+          <LinkButton href="/snow-report" variant="outline" className="w-full justify-center">Live snow report</LinkButton>
           <LinkButton href="/things-to-do" variant="ghost" className="w-full justify-center">Plan the rest of your day →</LinkButton>
         </aside>
       </div>

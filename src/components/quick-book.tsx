@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { useLocale } from "next-intl";
-import { ArrowRight, Repeat } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { Repeat } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import type { Route, VehicleClass } from "@/content/types";
 import { quoteRoute } from "@/lib/pricing";
+import { Button } from "@/components/ui/button";
+import type { Locale } from "@/i18n/routing";
 
 type Props = { routes: Route[] };
 
@@ -33,7 +35,8 @@ const swapMap: Record<string, string> = {
  * counter. Submits to the route page with pre-filled state.
  */
 export function QuickBookWidget({ routes }: Props) {
-  const locale = useLocale();
+  const locale = useLocale() as Locale;
+  const t = useTranslations("quickBook");
   const router = useRouter();
   const [routeSlug, setRouteSlug] = useState(routes[0]?.slug ?? "tbilisi-airport-gudauri");
   const activeRoute = routes.find((r) => r.slug === routeSlug) ?? routes[0]!;
@@ -41,7 +44,6 @@ export function QuickBookWidget({ routes }: Props) {
   const [pax, setPax] = useState(2);
   const [travelDate, setTravelDate] = useState(tomorrow());
   const [pending, startTransition] = useTransition();
-  void locale;
 
   const quote = useMemo(() => quoteRoute(activeRoute, vc, pax), [activeRoute, vc, pax]);
 
@@ -63,21 +65,23 @@ export function QuickBookWidget({ routes }: Props) {
     { priceGel: number; maxPax: number },
   ][];
 
+  const vehicleLabel = (c: "shared" | "sedan" | "minivan" | "suv4x4") => t(c);
+
   return (
     <div className="relative overflow-hidden rounded-lg border border-white/10 bg-surface p-5 shadow-[0_20px_60px_-30px_rgba(14,22,32,0.7)] md:p-6">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-small font-medium text-primary">Quick booking</p>
+        <p className="text-small font-medium text-primary">{t("title")}</p>
         <span className="inline-flex items-center gap-1.5 text-small tabular text-ink-muted">
           <span aria-hidden="true" className="relative flex h-2 w-2">
             <span className="absolute inset-0 animate-ping rounded-full bg-status-open opacity-70" />
             <span className="relative inline-block h-2 w-2 rounded-full bg-status-open" />
           </span>
-          Live prices
+          {t("livePrices")}
         </span>
       </div>
 
       <label className="mb-3 block text-small">
-        <span className="mb-1 block text-ink-muted">Route</span>
+        <span className="mb-1 block text-ink-muted">{t("route")}</span>
         <div className="flex items-center gap-2 rounded-sm border border-line bg-surface-raised px-3 py-2">
           <select
             value={routeSlug}
@@ -86,7 +90,7 @@ export function QuickBookWidget({ routes }: Props) {
           >
             {routes.map((r) => (
               <option key={r.slug} value={r.slug}>
-                {r.from.en} → {r.to.en}
+                {r.from[locale]} → {r.to[locale]}
               </option>
             ))}
           </select>
@@ -94,13 +98,13 @@ export function QuickBookWidget({ routes }: Props) {
         </div>
         <p className="mt-1 text-small text-ink-muted tabular">
           {activeRoute.distanceKm} km · {(activeRoute.durationMin / 60).toFixed(activeRoute.durationMin % 60 === 0 ? 0 : 1)}h
-          {activeRoute.requires4x4 ? " · 4x4 recommended" : ""}
+          {activeRoute.requires4x4 ? ` · ${t("need4x4")}` : ""}
         </p>
       </label>
 
       <div className="mb-3 grid grid-cols-2 gap-3">
         <label className="text-small">
-          <span className="mb-1 block text-ink-muted">Date</span>
+          <span className="mb-1 block text-ink-muted">{t("date")}</span>
           <input
             type="date"
             value={travelDate}
@@ -110,7 +114,7 @@ export function QuickBookWidget({ routes }: Props) {
           />
         </label>
         <label className="text-small">
-          <span className="mb-1 block text-ink-muted">Passengers</span>
+          <span className="mb-1 block text-ink-muted">{t("passengers")}</span>
           <input
             type="number"
             min={1}
@@ -123,12 +127,11 @@ export function QuickBookWidget({ routes }: Props) {
       </div>
 
       <div className="mb-4">
-        <span className="mb-1.5 block text-small text-ink-muted">Vehicle</span>
+        <span className="mb-1.5 block text-small text-ink-muted">{t("vehicle")}</span>
         <div className="grid grid-cols-4 gap-1.5">
           {(["shared", "sedan", "minivan", "suv4x4"] as const).map((c) => {
             const avail = classes.find(([k]) => k === c);
             const active = vc === c;
-            const label = c === "suv4x4" ? "4x4" : c[0]!.toUpperCase() + c.slice(1);
             return (
               <button
                 key={c}
@@ -144,7 +147,7 @@ export function QuickBookWidget({ routes }: Props) {
                       : "border-line bg-surface text-ink-muted opacity-40")
                 }
               >
-                {label}
+                {vehicleLabel(c)}
               </button>
             );
           })}
@@ -153,7 +156,7 @@ export function QuickBookWidget({ routes }: Props) {
 
       <div className="mb-4 flex items-baseline justify-between border-t border-line pt-4">
         <div>
-          <p className="text-small text-ink-muted">Fixed price</p>
+          <p className="text-small text-ink-muted">{t("fixedPrice")}</p>
           <p className="tabular text-[28px] leading-[32px] font-semibold text-accent">
             {quote.valid ? `${quote.amount.toLocaleString("en-US")} ₾` : "—"}
           </p>
@@ -161,35 +164,36 @@ export function QuickBookWidget({ routes }: Props) {
         <div className="text-right text-small text-ink-muted">
           {quote.valid ? (
             <>
-              {vc === "shared" ? "per group" : "flat, all-in"}
+              {vc === "shared" ? t("perGroup") : t("flatAllIn")}
               <br />
-              cancel free ≥24h
+              {t("cancelFree")}
             </>
           ) : (
-            <span className="text-status-limited">Max {quote.maxPax} for this class</span>
+            <span className="text-status-limited">{t("maxPaxForClass", { n: quote.maxPax })}</span>
           )}
         </div>
       </div>
 
-      <button
-        type="button"
+      <Button
+        variant="cta"
+        size="md"
+        arrow
         onClick={goBook}
         disabled={pending || !quote.valid}
-        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-sm bg-accent px-5 font-medium text-white transition-[filter] duration-150 hover:brightness-95 disabled:opacity-60"
+        className="!w-full"
       >
-        {pending ? "Opening…" : "Continue booking"}
-        <ArrowRight className="h-4 w-4" strokeWidth={2} />
-      </button>
+        {pending ? t("opening") : t("continueBooking")}
+      </Button>
 
       <ul className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-small text-ink-muted">
         <li className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-1 w-1 rounded-full bg-status-open" /> Fixed price
+          <span className="inline-block h-1 w-1 rounded-full bg-status-open" /> {t("trustFixedPrice")}
         </li>
         <li className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-1 w-1 rounded-full bg-status-open" /> Refund if road closes
+          <span className="inline-block h-1 w-1 rounded-full bg-status-open" /> {t("trustRefund")}
         </li>
         <li className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-1 w-1 rounded-full bg-status-open" /> Driver at T-12h
+          <span className="inline-block h-1 w-1 rounded-full bg-status-open" /> {t("trustDriver")}
         </li>
       </ul>
       {swapMap[routeSlug] ? null : null}

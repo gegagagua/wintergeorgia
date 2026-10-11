@@ -42,7 +42,7 @@ export async function ConditionsBar({ locale }: { locale: Locale }) {
   return (
     <div className="border-b border-white/10 bg-night text-snow">
       <div className="site-container flex h-8 items-center gap-4 overflow-x-auto text-small text-white/75">
-        <Link href="/road-status" className="inline-flex shrink-0 items-center gap-2 hover:text-snow">
+        <Link href="/snow-report" className="inline-flex shrink-0 items-center gap-2 hover:text-snow">
           <span aria-hidden="true" className={cn("h-1.5 w-1.5 rounded-full", statusDot)} />
           <span className="text-white/60">{road.name[locale]}</span>
           <span className="tabular">{t(road.status)}</span>

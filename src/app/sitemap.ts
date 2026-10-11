@@ -13,7 +13,6 @@ const paths: string[] = [
   "/",
   "/transfers",
   "/resorts",
-  "/road-status",
   "/snow-report",
   "/prices",
   "/things-to-do",
@@ -57,7 +56,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   resorts.forEach((r) => pushForAllLocales(`/resorts/${r.slug}`, 0.9));
   transferRoutes.forEach((r) => pushForAllLocales(`/transfers/${r.slug}`, 0.95));
-  roads.forEach((r) => pushForAllLocales(`/road-status/${r.slug}`, 0.85, "daily"));
+  roads.forEach((r) => pushForAllLocales(`/snow-report/${r.slug}`, 0.85, "daily"));
   events.forEach((e) => pushForAllLocales(`/events/${e.slug}`, 0.7));
   articles.forEach((a) => {
     const base = a.template === "qa" ? "/answers" : "/journal";

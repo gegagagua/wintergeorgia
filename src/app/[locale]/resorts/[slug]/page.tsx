@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { setRequestLocale, getFormatter } from "next-intl/server";
+import { setRequestLocale, getFormatter, getTranslations } from "next-intl/server";
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/button";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -19,7 +20,8 @@ import { findSnow } from "@/content/roads";
 import { prices } from "@/content/prices";
 import { seasonStateFor } from "@/config/season";
 import { SeasonAlertForm } from "@/components/season-alert-form";
-import { PhotoGallery } from "@/components/photo-gallery";
+import { GallerySlider } from "@/components/gallery-slider";
+import { ResortVideos } from "@/components/resort-videos";
 import { ResortMap } from "@/components/resort-map";
 import { RelatedStrip } from "@/components/related-strip";
 import { relatedForResort } from "@/lib/related";
@@ -59,6 +61,7 @@ export default async function ResortPage({
   const l = locale as Locale;
   setRequestLocale(l);
   const fmt = await getFormatter();
+  const t = await getTranslations("resort");
 
   const r = findResort(slug);
   if (!r) notFound();
@@ -72,6 +75,12 @@ export default async function ResortPage({
   const resortPrice = prices.find((p) => p.resort === r.slug);
 
   const bestFor = r.bestFor[l];
+  const infoBlocks = [
+    r.bestTime ? { key: "bestTime", title: t("bestTime"), body: r.bestTime[l] } : null,
+    r.apresSki ? { key: "apresSki", title: t("apresSki"), body: r.apresSki[l] } : null,
+    r.gearTips ? { key: "gearTips", title: t("gearTips"), body: r.gearTips[l] } : null,
+    r.nearbyTowns ? { key: "nearbyTowns", title: t("nearbyTowns"), body: r.nearbyTowns[l] } : null,
+  ].filter((x): x is { key: string; title: string; body: string } => x !== null);
 
   return (
     <>
@@ -80,8 +89,8 @@ export default async function ResortPage({
         dangerouslySetInnerHTML={{
           __html: JSON.stringify([
             breadcrumbLd(l, [
-              { name: "Home", path: "/" },
-              { name: "Resorts", path: "/resorts" },
+              { name: t("home"), path: "/" },
+              { name: t("resorts"), path: "/resorts" },
               { name: r.name[l], path: `/resorts/${r.slug}` },
             ]),
             touristAttractionLd({
@@ -118,8 +127,8 @@ export default async function ResortPage({
         <div className="relative site-container py-10 md:py-16">
           <Breadcrumb
             items={[
-              { name: "Home", path: "/" },
-              { name: "Resorts", path: "/resorts" },
+              { name: t("home"), path: "/" },
+              { name: t("resorts"), path: "/resorts" },
               { name: r.name[l] },
             ]}
           />
@@ -153,41 +162,43 @@ export default async function ResortPage({
 
             <aside className="rounded-lg border border-white/10 bg-glacier/60 p-5">
               <p className="text-small text-white/70">
-                {season.state === "open" ? `Live at ${r.name[l]}` : season.state === "preseason" ? "Preseason" : "Season closed"}
+                {season.state === "open" ? t("liveAt", { name: r.name[l] }) : season.state === "preseason" ? t("preseason") : t("seasonClosed")}
               </p>
               {season.state === "open" && snow ? (
                 <div className="mt-3 grid grid-cols-2 gap-3">
-                  <Stat label="Top snow" value={`${snow.topCm} cm`} />
-                  <Stat label="Base snow" value={`${snow.baseCm} cm`} />
-                  <Stat label="24h new" value={`+${snow.new24hCm} cm`} />
-                  <Stat label="Temperature" value={`${snow.tempC > 0 ? "+" : ""}${snow.tempC}°C`} />
-                  <Stat label="Lifts" value={`${snow.liftsOpen}/${snow.liftsTotal}`} />
-                  <Stat label="Wind" value={`${snow.windMs} m/s`} />
+                  <Stat label={t("topSnow")} value={`${snow.topCm} cm`} />
+                  <Stat label={t("baseSnow")} value={`${snow.baseCm} cm`} />
+                  <Stat label={t("new24h")} value={`+${snow.new24hCm} cm`} />
+                  <Stat label={t("temperature")} value={`${snow.tempC > 0 ? "+" : ""}${snow.tempC}°C`} />
+                  <Stat label={t("liftsHeading")} value={`${snow.liftsOpen}/${snow.liftsTotal}`} />
+                  <Stat label={t("wind")} value={`${snow.windMs} m/s`} />
                 </div>
               ) : season.state === "preseason" ? (
                 <div className="mt-3">
                   <p className="font-serif text-[22px] leading-[28px] text-snow">
                     {season.daysToOpen === 0
-                      ? "Opens today"
+                      ? t("opensToday")
                       : season.daysToOpen === 1
-                        ? "Opens tomorrow"
-                        : `Opens in ${season.daysToOpen} days`}
+                        ? t("opensTomorrow")
+                        : t("opensInDays", { n: season.daysToOpen })}
                   </p>
                   <p className="mt-1 text-small text-white/70 tabular">
                     {season.opensOn ? fmt.dateTime(new Date(season.opensOn), { day: "numeric", month: "long" }) : null}
                   </p>
-                  <p className="mt-3 text-small text-white/60">Not measured yet. We start the hourly reading once the lifts turn.</p>
+                  <p className="mt-3 text-small text-white/60">{t("notMeasuredYet")}</p>
                   <div className="mt-4">
                     <SeasonAlertForm resort={r.slug} tone="dark" />
                   </div>
                 </div>
               ) : (
-                <p className="mt-3 text-small text-white/70">Season closed. Back next winter.</p>
+                <p className="mt-3 text-small text-white/70">{t("backNextWinter")}</p>
               )}
               <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                <LinkButton href="/transfers" variant="cta" className="flex-1 justify-center">Book a transfer</LinkButton>
-                <LinkButton href="/snow-report" variant="outline" className="flex-1 justify-center border-white/20 bg-transparent text-snow hover:border-dawn-soft">
-                  Full report
+                <LinkButton href="/transfers" variant="cta" size="sm" className="flex-1">
+                  {t("bookTransfer")}
+                </LinkButton>
+                <LinkButton href="/snow-report" variant="outline" size="sm" tone="dark" className="flex-1">
+                  {t("fullReport")}
                 </LinkButton>
               </div>
             </aside>
@@ -195,10 +206,17 @@ export default async function ResortPage({
         </div>
       </section>
 
-      {/* Photo gallery (only when real photos exist) */}
+      {/* Gallery slider */}
       {r.images && r.images.length > 0 ? (
         <section className="site-container pt-10">
-          <PhotoGallery images={r.images} locale={l} heroPriority />
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-small text-primary">{t("gallery")}</p>
+              <h2 className="mt-1 font-serif text-[28px] leading-[36px]">{r.name[l]}</h2>
+            </div>
+            <p className="hidden text-small text-ink-muted sm:block">{t("gallerySubtitle")}</p>
+          </div>
+          <GallerySlider images={r.images} locale={l} heroPriority />
         </section>
       ) : null}
 
@@ -206,7 +224,7 @@ export default async function ResortPage({
       <section className="site-container py-12">
         <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
           <div>
-            <h2 className="font-serif text-[28px] leading-[36px]">What makes it worth the drive</h2>
+            <h2 className="font-serif text-[28px] leading-[36px]">{t("whatMakesItWorth")}</h2>
             <ul className="mt-5 grid gap-3">
               {r.highlights.map((h, i) => (
                 <li key={i} className="flex gap-3 rounded-lg border border-line bg-surface p-4">
@@ -217,47 +235,47 @@ export default async function ResortPage({
             </ul>
           </div>
           <aside className="rounded-lg border border-line bg-surface-raised p-5">
-            <p className="text-small text-primary">Best for</p>
+            <p className="text-small text-primary">{t("bestFor")}</p>
             <p className="mt-2 text-ink">{bestFor}</p>
             {resortPrice && resortPrice.liftPassDayGel > 0 ? (
               <div className="mt-5 border-t border-line pt-4">
-                <p className="text-small text-ink-muted">Day pass</p>
+                <p className="text-small text-ink-muted">{t("dayPass")}</p>
                 <div className="mt-1"><Price gel={resortPrice.liftPassDayGel} size="lg" /></div>
-                <p className="mt-2 text-small text-ink-muted tabular">Week: {resortPrice.liftPassWeekGel} ₾</p>
+                <p className="mt-2 text-small text-ink-muted tabular">{t("weekPass", { price: resortPrice.liftPassWeekGel })}</p>
               </div>
             ) : null}
           </aside>
         </div>
       </section>
 
-      {/* Terrain, lifts, longest run — rendered only when data present */}
+      {/* Terrain, lifts */}
       {(r.terrain || r.lifts?.length || r.longestRunKm || r.verticalDropM) ? (
         <section className="border-t border-line bg-surface py-12">
           <div className="site-container grid gap-8 md:grid-cols-[1.3fr_1fr]">
             {r.terrain ? (
               <div>
-                <h2 className="font-serif text-[24px] leading-[32px]">Terrain split</h2>
+                <h2 className="font-serif text-[24px] leading-[32px]">{t("terrainSplit")}</h2>
                 <dl className="mt-4 grid grid-cols-3 gap-3">
                   {r.terrain.beginner !== undefined ? (
-                    <TerrainStat label="Beginner" value={`${r.terrain.beginner}%`} tone="open" />
+                    <TerrainStat label={t("beginner")} value={`${r.terrain.beginner}%`} tone="open" />
                   ) : null}
                   {r.terrain.intermediate !== undefined ? (
-                    <TerrainStat label="Intermediate" value={`${r.terrain.intermediate}%`} tone="limited" />
+                    <TerrainStat label={t("intermediate")} value={`${r.terrain.intermediate}%`} tone="limited" />
                   ) : null}
                   {r.terrain.advanced !== undefined ? (
-                    <TerrainStat label="Advanced" value={`${r.terrain.advanced}%`} tone="closed" />
+                    <TerrainStat label={t("advanced")} value={`${r.terrain.advanced}%`} tone="closed" />
                   ) : null}
                 </dl>
                 <dl className="mt-4 grid grid-cols-2 gap-3 text-small">
                   {r.longestRunKm ? (
                     <div className="rounded-md border border-line bg-surface-raised p-3">
-                      <dt className="text-ink-muted">Longest run</dt>
+                      <dt className="text-ink-muted">{t("longestRun")}</dt>
                       <dd className="mt-1 font-serif text-[22px] leading-[28px] tabular">{r.longestRunKm} km</dd>
                     </div>
                   ) : null}
                   {r.verticalDropM ? (
                     <div className="rounded-md border border-line bg-surface-raised p-3">
-                      <dt className="text-ink-muted">Vertical drop</dt>
+                      <dt className="text-ink-muted">{t("verticalDrop")}</dt>
                       <dd className="mt-1 font-serif text-[22px] leading-[28px] tabular">{r.verticalDropM} m</dd>
                     </div>
                   ) : null}
@@ -267,7 +285,7 @@ export default async function ResortPage({
 
             {r.lifts && r.lifts.length > 0 ? (
               <div>
-                <h2 className="font-serif text-[24px] leading-[32px]">Lifts</h2>
+                <h2 className="font-serif text-[24px] leading-[32px]">{t("liftsHeading")}</h2>
                 <ul className="mt-4 grid gap-2 text-small">
                   {r.lifts.map((lift) => (
                     <li
@@ -293,34 +311,64 @@ export default async function ResortPage({
         </section>
       ) : null}
 
+      {/* Rich info blocks (bestTime, après-ski, gear, nearby) */}
+      {infoBlocks.length > 0 ? (
+        <section className="site-container py-12">
+          <div className="grid gap-4 md:grid-cols-2">
+            {infoBlocks.map((b) => (
+              <article
+                key={b.key}
+                className="rounded-xl border border-line bg-surface p-6"
+              >
+                <p className="text-small text-primary">{b.title}</p>
+                <p className="mt-2 text-ink leading-[1.65]">{b.body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* YouTube videos */}
+      {r.videos && r.videos.length > 0 ? (
+        <section className="border-t border-line bg-surface-raised py-12">
+          <div className="site-container">
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-small text-primary">{t("videos")}</p>
+                <h2 className="mt-1 font-serif text-[28px] leading-[36px]">{t("videosSubtitle", { name: r.name[l] })}</h2>
+              </div>
+            </div>
+            <ResortVideos videos={r.videos} locale={l} />
+          </div>
+        </section>
+      ) : null}
+
       {/* Map + parking */}
       <section className="site-container py-10">
         <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
           <div>
-            <h2 className="mb-4 font-serif text-[24px] leading-[32px]">On the map</h2>
+            <h2 className="mb-4 font-serif text-[24px] leading-[32px]">{t("onTheMap")}</h2>
             <ResortMap lat={r.lat} lng={r.lng} label={r.name[l]} />
           </div>
           {r.parkingNote ? (
             <aside className="rounded-lg border border-line bg-surface p-5">
-              <p className="text-small text-primary">Parking</p>
+              <p className="text-small text-primary">{t("parking")}</p>
               <p className="mt-2 text-ink">{r.parkingNote[l]}</p>
             </aside>
           ) : (
             <aside className="rounded-lg border border-line bg-surface p-5">
-              <p className="text-small text-primary">Coordinates</p>
+              <p className="text-small text-primary">{t("coordinates")}</p>
               <p className="mt-2 tabular text-ink">{r.lat.toFixed(4)}, {r.lng.toFixed(4)}</p>
-              <p className="mt-2 text-small text-ink-muted">
-                Pin shows the base of the main lift. Hotels on the ridge are 300–800 m away.
-              </p>
+              <p className="mt-2 text-small text-ink-muted">{t("pinNote")}</p>
             </aside>
           )}
         </div>
       </section>
 
-      {/* Resort FAQ (owner-supplied in content/resorts.ts, rendered only when present) */}
+      {/* Resort FAQ */}
       {r.faqs && r.faqs.length > 0 ? (
         <section className="site-container py-12">
-          <h2 className="font-serif text-[28px] leading-[36px]">Questions people actually ask</h2>
+          <h2 className="font-serif text-[28px] leading-[36px]">{t("questionsPeopleAsk")}</h2>
           <dl className="mt-6 grid gap-3">
             {r.faqs.map((f, i) => (
               <div key={i} className="rounded-lg border border-line bg-surface p-5">
@@ -336,10 +384,16 @@ export default async function ResortPage({
       {resortRoutes.length > 0 ? (
         <section className="border-t border-line bg-surface-raised py-12">
           <div className="site-container">
-            <h2 className="mb-6 font-serif text-[28px] leading-[36px]">How to get to {r.name[l]}</h2>
+            <h2 className="mb-6 font-serif text-[28px] leading-[36px]">{t("howToGet", { name: r.name[l] })}</h2>
             <Table>
               <THead>
-                <TR><TH>From</TH><TH>Distance</TH><TH>Time</TH><TH align="right">From</TH><TH>{" "}</TH></TR>
+                <TR>
+                  <TH>{t("fromCol")}</TH>
+                  <TH>{t("distance")}</TH>
+                  <TH>{t("time")}</TH>
+                  <TH align="right">{t("fromCol")}</TH>
+                  <TH>{" "}</TH>
+                </TR>
               </THead>
               <tbody>
                 {resortRoutes.map((rt) => {
@@ -354,13 +408,15 @@ export default async function ResortPage({
                           <>
                             <Price gel={from.priceGel} size="sm" />
                             <span className="ml-1 text-small text-ink-muted">
-                              {from.perSeat ? "/seat" : "/vehicle"}
+                              {from.perSeat ? t("perSeat") : t("perVehicle")}
                             </span>
                           </>
                         ) : "—"}
                       </TD>
                       <TD align="right">
-                        <Link href={`/transfers/${rt.slug}` as never} className="text-small text-primary hover:underline">Book →</Link>
+                        <Link href={`/transfers/${rt.slug}` as never} className="text-small text-primary hover:underline">
+                          {t("book")}
+                        </Link>
                       </TD>
                     </TR>
                   );
@@ -374,7 +430,7 @@ export default async function ResortPage({
       {/* Places */}
       {resortPlaces.length > 0 ? (
         <section className="site-container py-12">
-          <h2 className="mb-6 font-serif text-[28px] leading-[36px]">Things to do in {r.name[l]}</h2>
+          <h2 className="mb-6 font-serif text-[28px] leading-[36px]">{t("thingsToDo", { name: r.name[l] })}</h2>
           <div className="grid gap-4 md:grid-cols-3">
             {resortPlaces.slice(0, 3).map((p) => (
               <Link key={p.slug} href={`/things-to-do/${r.slug}/${p.slug}` as never} className="group">
@@ -388,7 +444,9 @@ export default async function ResortPage({
             ))}
           </div>
           <div className="mt-4">
-            <LinkButton href={`/things-to-do/${r.slug}`} variant="ghost" size="sm">More things to do in {r.name[l]} →</LinkButton>
+            <LinkButton href={`/things-to-do/${r.slug}`} variant="ghost" size="sm">
+              {t("moreThingsToDo", { name: r.name[l] })}
+            </LinkButton>
           </div>
         </section>
       ) : null}
@@ -397,7 +455,7 @@ export default async function ResortPage({
       {resortEvents.length > 0 ? (
         <section className="border-t border-line bg-surface-raised py-12">
           <div className="site-container">
-            <h2 className="mb-6 font-serif text-[28px] leading-[36px]">Upcoming at {r.name[l]}</h2>
+            <h2 className="mb-6 font-serif text-[28px] leading-[36px]">{t("upcoming", { name: r.name[l] })}</h2>
             <div className="grid gap-4 md:grid-cols-2">
               {resortEvents.map((e) => (
                 <Link key={e.slug} href={`/events/${e.slug}` as never} className="group">
@@ -415,20 +473,36 @@ export default async function ResortPage({
         </section>
       ) : null}
 
-      {/* Journal about the resort */}
+      {/* News about the resort — with covers */}
       {resortArticles.length > 0 ? (
         <section className="site-container py-12">
-          <h2 className="mb-6 font-serif text-[28px] leading-[36px]">From the journal</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            {resortArticles.map((a) => (
+          <h2 className="mb-6 font-serif text-[28px] leading-[36px]">{t("fromNews")}</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {resortArticles.slice(0, 6).map((a) => (
               <Link key={a.slug} href={`/journal/${a.slug}` as never} className="group">
-                <Card interactive className="h-full">
-                  <div className="flex items-center gap-2 text-small">
-                    <span className="text-primary">{a.category}</span>
-                    {a.isAlert ? <StatusPill status="closed" label="Alert" /> : null}
+                <Card interactive className="flex h-full flex-col overflow-hidden !p-0">
+                  {a.cover ? (
+                    <div className="relative aspect-[16/9] w-full overflow-hidden">
+                      <Image
+                        src={a.cover}
+                        alt={a.title[l]}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="flex items-center gap-2 text-small">
+                      <span className="text-primary">{a.category}</span>
+                      {a.isAlert ? <StatusPill status="closed" label={t("alert")} /> : null}
+                      <span className="ml-auto tabular text-ink-muted">
+                        {fmt.dateTime(new Date(a.publishedAt), { day: "numeric", month: "short" })}
+                      </span>
+                    </div>
+                    <h3 className="mt-2 font-serif text-[20px] leading-[28px] group-hover:text-primary">{a.title[l]}</h3>
+                    <p className="mt-2 line-clamp-3 flex-1 text-small leading-[1.5] text-ink-muted">{a.excerpt[l]}</p>
                   </div>
-                  <h3 className="mt-1 font-serif text-[20px] leading-[28px] group-hover:text-primary">{a.title[l]}</h3>
-                  <p className="mt-2 line-clamp-2 text-small text-ink-muted">{a.excerpt[l]}</p>
                 </Card>
               </Link>
             ))}
@@ -436,17 +510,19 @@ export default async function ResortPage({
         </section>
       ) : null}
 
-      {/* Related — auto-generated internal links from the data model */}
+      {/* Related */}
       <RelatedStrip items={relatedForResort(r.slug, l)} title={`More for ${r.name[l]}`} />
 
       {/* CTA */}
       <section className="border-y border-line bg-glacier text-snow">
         <div className="site-container flex flex-col items-start justify-between gap-6 py-10 md:flex-row md:items-center">
           <div>
-            <p className="text-small text-dawn-soft">Ready?</p>
-            <h2 className="mt-1 font-serif text-[28px] leading-[36px]">Get to {r.name[l]} with a fixed-price transfer.</h2>
+            <p className="text-small text-dawn-soft">{t("readyKicker")}</p>
+            <h2 className="mt-1 font-serif text-[28px] leading-[36px]">{t("readyTitle", { name: r.name[l] })}</h2>
           </div>
-          <LinkButton href="/transfers" variant="cta" size="lg">Book a transfer</LinkButton>
+          <LinkButton href="/transfers" variant="cta" size="lg" arrow>
+            {t("bookTransfer")}
+          </LinkButton>
         </div>
       </section>
     </>

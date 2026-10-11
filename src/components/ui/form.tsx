@@ -6,7 +6,34 @@ import MuiCheckbox from "@mui/material/Checkbox";
 import MuiRadio from "@mui/material/Radio";
 import MuiRadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import type { SxProps, Theme } from "@mui/material/styles";
 import { cn } from "@/lib/cn";
+
+type Tone = "default" | "dark";
+
+const darkInputSx: SxProps<Theme> = {
+  "& .MuiOutlinedInput-root": {
+    minHeight: 46,
+    borderRadius: "10px",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    backdropFilter: "blur(8px)",
+    color: "#FFFFFF",
+    "& fieldset": { borderColor: "rgba(255,255,255,0.35)" },
+    "&:hover fieldset": { borderColor: "rgba(255,255,255,0.6)" },
+    "&.Mui-focused fieldset": { borderColor: "#FFFFFF", borderWidth: 1 },
+  },
+  "& .MuiOutlinedInput-input": {
+    color: "#FFFFFF",
+    "&::placeholder": { color: "rgba(255,255,255,0.65)", opacity: 1 },
+  },
+};
+
+const defaultInputSx: SxProps<Theme> = {
+  "& .MuiOutlinedInput-root": {
+    minHeight: 46,
+    borderRadius: "10px",
+  },
+};
 
 export function Field({
   label,
@@ -36,7 +63,7 @@ export function Field({
   );
 }
 
-type NativeInputProps = ComponentProps<"input">;
+type NativeInputProps = ComponentProps<"input"> & { tone?: Tone };
 
 export function Input({
   className,
@@ -48,6 +75,7 @@ export function Input({
   pattern,
   size: _size,
   type,
+  tone = "default",
   ...rest
 }: NativeInputProps) {
   return (
@@ -57,10 +85,11 @@ export function Input({
       size="small"
       fullWidth
       className={cn(className)}
+      sx={tone === "dark" ? darkInputSx : defaultInputSx}
       slotProps={{
         htmlInput: { min, max, step, minLength, maxLength, pattern },
       }}
-      {...(rest as Omit<TextFieldProps, "variant" | "size" | "fullWidth" | "slotProps" | "type">)}
+      {...(rest as Omit<TextFieldProps, "variant" | "size" | "fullWidth" | "slotProps" | "type" | "sx">)}
     />
   );
 }

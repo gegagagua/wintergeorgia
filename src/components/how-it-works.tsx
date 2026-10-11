@@ -1,35 +1,38 @@
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { SectionHeader } from "@/components/ui/section-header";
 import { stepImages } from "@/lib/images";
-
-const steps = [
-  {
-    n: "01",
-    title: "Pick your route",
-    body: "Ten operating routes to every Georgian ski area. Fixed price shown before you enter card details.",
-    img: stepImages.route,
-  },
-  {
-    n: "02",
-    title: "Choose the vehicle",
-    body: "Shared seat, sedan, minivan or 4x4 SUV — winter tyres and chains on every vehicle, ski rack on request.",
-    img: stepImages.vehicle,
-  },
-  {
-    n: "03",
-    title: "Meet your driver",
-    body: "Driver name, phone, vehicle and plate arrive by WhatsApp 12 hours before pickup. Meet-and-greet at arrivals.",
-    img: stepImages.driver,
-  },
-];
 
 /**
  * Three-step flow with real photography and a subtle image zoom on hover.
  */
-export function HowItWorks() {
+export async function HowItWorks() {
+  const t = await getTranslations("howItWorks");
+
+  const steps = [
+    {
+      n: "01",
+      title: t("step1Title"),
+      body: t("step1Body"),
+      img: stepImages.route,
+    },
+    {
+      n: "02",
+      title: t("step2Title"),
+      body: t("step2Body"),
+      img: stepImages.vehicle,
+    },
+    {
+      n: "03",
+      title: t("step3Title"),
+      body: t("step3Body"),
+      img: stepImages.driver,
+    },
+  ];
+
   return (
-    <section className="site-container py-16">
-      <SectionHeader kicker="How it works" title="From booking to the base station" />
+    <section className="site-container py-12">
+      <SectionHeader kicker={t("kicker")} title={t("title")} />
 
       <div className="grid gap-4 md:grid-cols-3">
         {steps.map((s) => (

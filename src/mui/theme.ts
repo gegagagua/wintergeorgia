@@ -93,37 +93,64 @@ export const muiTheme = createTheme({
   },
   components: {
     MuiButton: {
-      defaultProps: { disableElevation: true, variant: "contained" },
+      defaultProps: { disableElevation: true, variant: "contained", disableRipple: false },
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          fontWeight: 500,
+          borderRadius: 10,
+          fontWeight: 600,
           letterSpacing: 0,
+          textTransform: "none",
+          whiteSpace: "nowrap",
+          transition:
+            "background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease, transform 150ms ease",
         },
         sizeSmall: {
-          minHeight: 36,
-          paddingInline: 14,
+          minHeight: 38,
+          paddingInline: 16,
           fontSize: 13,
         },
         sizeMedium: {
-          minHeight: 44,
-          paddingInline: 20,
-          fontSize: 14,
+          minHeight: 46,
+          paddingInline: 22,
+          fontSize: 15,
         },
         sizeLarge: {
-          minHeight: 48,
-          paddingInline: 24,
-          fontSize: 15,
+          minHeight: 56,
+          paddingInline: 28,
+          fontSize: 16,
+        },
+        endIcon: {
+          marginLeft: 10,
+        },
+        startIcon: {
+          marginRight: 10,
+        },
+        contained: {
+          boxShadow: "0 1px 2px rgba(14,22,32,0.08)",
+          "&:hover": {
+            boxShadow: "0 6px 20px -8px rgba(14,22,32,0.35)",
+          },
         },
       },
       variants: [
         {
+          props: { variant: "contained", color: "secondary" },
+          style: {
+            boxShadow: "0 6px 18px -6px rgba(217,132,54,0.55)",
+            "&:hover": {
+              boxShadow: "0 10px 26px -8px rgba(217,132,54,0.65)",
+            },
+          },
+        },
+        {
           props: { variant: "outlined", color: "primary" },
           style: {
+            borderWidth: 1,
             borderColor: t("line"),
             color: t("ink"),
             backgroundColor: t("surface"),
             "&:hover": {
+              borderWidth: 1,
               borderColor: t("primary"),
               backgroundColor: t("surface-raised"),
               color: t("primary"),

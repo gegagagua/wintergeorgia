@@ -26,24 +26,23 @@ export function MobileNav() {
         aria-label="Menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-line text-ink md:hidden"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-line text-ink lg:hidden"
       >
         {open ? <X className="h-5 w-5" strokeWidth={1.75} /> : <Menu className="h-5 w-5" strokeWidth={1.75} />}
       </button>
 
       {open ? (
         <div
-          className="fixed inset-x-0 top-16 z-40 border-t border-line bg-surface md:hidden"
+          className="fixed inset-x-0 top-16 z-40 border-t border-line bg-surface lg:hidden"
           role="dialog"
           aria-modal="true"
         >
           <nav className="site-container flex flex-col divide-y divide-line py-2" aria-label="Mobile">
-            <MobileLink href="/transfers">{t("transfers")}</MobileLink>
-            <MobileLink href="/resorts">{t("resorts")}</MobileLink>
-            <MobileLink href="/road-status">{t("conditions")}</MobileLink>
-            <MobileLink href="/things-to-do">{t("thingsToDo")}</MobileLink>
-            <MobileLink href="/events">{t("events")}</MobileLink>
-            <MobileLink href="/journal">{t("journal")}</MobileLink>
+            <MobileLink href="/transfers" pathname={pathname}>{t("transfers")}</MobileLink>
+            <MobileLink href="/resorts" pathname={pathname}>{t("resorts")}</MobileLink>
+            <MobileLink href="/things-to-do" pathname={pathname}>{t("thingsToDo")}</MobileLink>
+            <MobileLink href="/events" pathname={pathname}>{t("events")}</MobileLink>
+            <MobileLink href="/journal" pathname={pathname}>{t("journal")}</MobileLink>
           </nav>
         </div>
       ) : null}
@@ -51,9 +50,14 @@ export function MobileNav() {
   );
 }
 
-function MobileLink({ href, children }: { href: string; children: React.ReactNode }) {
+function MobileLink({ href, pathname, children }: { href: string; pathname: string; children: React.ReactNode }) {
+  const active = pathname === href || pathname.startsWith(href + "/");
   return (
-    <Link href={href as never} className="block py-3 text-ink">
+    <Link
+      href={href as never}
+      aria-current={active ? "page" : undefined}
+      className={active ? "block py-3 font-semibold text-primary" : "block py-3 text-ink"}
+    >
       {children}
     </Link>
   );

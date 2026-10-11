@@ -14,7 +14,7 @@ export default function LocaleNotFound() {
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <LinkButton href="/" variant="primary">Home</LinkButton>
-          <LinkButton href="/road-status" variant="outline">Road status</LinkButton>
+          <LinkButton href="/snow-report" variant="outline">Snow report</LinkButton>
           <LinkButton href="/transfers" variant="cta">Book a transfer</LinkButton>
         </div>
         <p className="mt-8 text-small text-ink-muted">

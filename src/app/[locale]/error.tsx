@@ -25,11 +25,11 @@ export default function LocaleError({
         A page failed to load.
       </h1>
       <p className="mx-auto mt-4 max-w-xl text-ink-muted">
-        The team was notified. You can retry, or head back to the road status page.
+        The team was notified. You can retry, or head back to the snow report.
       </p>
       <div className="mt-6 flex justify-center gap-3">
         <Button onClick={reset} variant="primary">Try again</Button>
-        <LinkButton href="/road-status" variant="outline">Road status</LinkButton>
+        <LinkButton href="/snow-report" variant="outline">Snow report</LinkButton>
       </div>
       {error.digest ? (
         <p className="mt-6 text-small text-ink-muted tabular">ref {error.digest}</p>

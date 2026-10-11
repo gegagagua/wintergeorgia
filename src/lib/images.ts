@@ -22,15 +22,15 @@ export const resortImages: Record<ResortSlug, { src: string; alt: string; blur?:
     alt: "Chalet village at Bakuriani with snow-covered pines",
   },
   tetnuldi: {
-    src: U("1483721310020-03333e577078"),
+    src: "/routes/mestia-tetnuldi.jpg",
     alt: "Tetnuldi peak in Upper Svaneti at golden hour",
   },
   hatsvali: {
-    src: U("1418985991508-e47386d96a71"),
+    src: "/routes/mestia-hatsvali.jpg",
     alt: "Wide alpine panorama near Mestia",
   },
   goderdzi: {
-    src: U("1610901157620-340856d0a50f"),
+    src: "/routes/batumi-goderdzi.jpg",
     alt: "Fresh powder tracks across a Georgian slope",
   },
   kazbegi: {
@@ -149,8 +149,8 @@ export const stepImages = {
     alt: "Passenger van parked by a snowy pine forest",
   },
   driver: {
-    src: U("1521737604893-d14cc237f11d"),
-    alt: "Driver holding a name sign at arrivals",
+    src: "/fleet/suv4x4.jpg",
+    alt: "Driver's 4x4 SUV ready at pickup on a snowy mountain road",
   },
 } as const;
 
